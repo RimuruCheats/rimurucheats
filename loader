@@ -1,7 +1,7 @@
-print(' KeyAuth Lua Example - https://github.com/mazk5145/')
+print(' Rimuru cheats')
 local HttpService = game:GetService("HttpService")
 local StarterGui = game:GetService("StarterGui")
-local LuaName = "KeyAuth Lua Example"
+local LuaName = "Rimuru cheats"
 
 --* Configuration *--
 local initialized = false
