@@ -33,4 +33,7 @@ elseif game.PlaceId == 6969185078 then -- Elemental Awaking
     
 elseif game.PlaceId == 7056922815 then -- Reaper 2
     loadstring(game:HttpGet("https://raw.githubusercontent.com/RimuruCheats/rimurucheats/main/reaper2"))()
+    
+elseif game.PlaceId == 2753915549 then -- blox fruits
+    loadstring(game:HttpGet("https://raw.githubusercontent.com/RimuruCheats/rimurucheats/main/bloxfruits"))()
 end
