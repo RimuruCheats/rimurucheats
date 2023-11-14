@@ -482,13 +482,12 @@ local function TP(P)
     ts:Create(Client.Character.PrimaryPart,TweenInfo.new(Distance/Speed, Enum.EasingStyle.Linear),{CFrame = P}):Play()
 end
 
-
 task.spawn(function()
     while true do
         RunService.Heartbeat:Wait();
         if rageParry then
-            local ball = findTarget();
-            TP(ball.CFrame - Vector3.new(0,8,0));
+            local ball = function () for _,v in workspace.Balls:GetChildren() do if v:GetAttribute("realBall") then return true end end end
+            TP(ball.CFrame - Vector3.new(0,6,0));
             task.wait()
             parryButtonPress:Fire();
         end
@@ -622,17 +621,6 @@ local function canHitBallDist(ball)
     return Client:DistanceFromCharacter(ball.Position) >= 30 and Client:DistanceFromCharacter(ball.Position) <= 50;
 end
 
-RunService.Heartbeat:Connect(function(deltaTime)
-    if printBallSpeedV then
-        local ball = findTarget();
-        if ball and ball.Position and velocity and velocity.Magnitude then
-            print(getballvelocityold())
-        else
-            print("Unable to calculate distance or velocity.")
-        end
-        
-    end
-end)
 
 local function getRandomCurve()
     return math.random(1, 5)
