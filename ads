@@ -453,7 +453,7 @@ end
 
 
 
-local rageParry = false;
+local rageParry = true;
 -- heartbeats
 RunService.Heartbeat:Connect(function(deltaTime)
     autoparry = OrionLib.Flags["autoParryToggleFlag"].Value
@@ -469,7 +469,7 @@ task.spawn(function()
         if rageParry then
             local ball = findTarget();
             if ball then
-                Client.Character.PrimaryPart.CFrame = ball.CFrame - Vector3.new(0,10,0);
+                Client.Character.HumanoidRootPart.CFrame = ball.CFrame - Vector3.new(0,10,0);
                 task.wait()
                 parryButtonPress:Fire();
             end
