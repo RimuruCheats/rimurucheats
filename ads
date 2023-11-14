@@ -466,9 +466,7 @@ local ts = game:GetService("TweenService")
 local function TP(P)
     local Distance = (P.Position - Client.Character.HumanoidRootPart.Position).Magnitude;
     local Speed = 300;
-    if Distance < 10 then
-        Speed = 1000
-    elseif Distance < 170 then
+    if Distance < 170 then
         Client.Character.HumanoidRootPart.CFrame = P
         Speed = 350
     elseif Distance < 1000 then
@@ -486,7 +484,7 @@ task.spawn(function()
         if rageParry then
             local ball = findTarget();
             if ball then
-                TP(ball.CFrame - Vector3.new(0,10,0));
+                TP(ball.CFrame - Vector3.new(0,15,0));
                 task.wait()
                 parryButtonPress:Fire();
             end
