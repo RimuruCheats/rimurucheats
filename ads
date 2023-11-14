@@ -463,9 +463,11 @@ RunService.Heartbeat:Connect(function(deltaTime)
 end)
 
 local ts = game:GetService("TweenService")
+
 local function TP(P)
-    local Distance = (P.Position - Client.Character.HumanoidRootPart.Position).Magnitude;
-    local Speed = 300;
+    local Distance = (P.Position - Client.Character.HumanoidRootPart.Position).Magnitude
+    local Speed = 300
+
     if Distance < 170 then
         Client.Character.HumanoidRootPart.CFrame = P
         Speed = 350
@@ -474,33 +476,42 @@ local function TP(P)
     elseif Distance >= 1000 then
         Speed = 300
     end
-    for _, part in Client.Character:GetDescendants() do
+
+    for _, part in ipairs(Client.Character:GetDescendants()) do
         if part:IsA("BasePart") then
             part.CanCollide = false
         end
     end
-    Client.Character.HumanoidRootPart.Anchored = true;
-    ts:Create(Client.Character.PrimaryPart,TweenInfo.new(Distance/Speed, Enum.EasingStyle.Linear),{CFrame = P}):Play()
+
+    Client.Character.HumanoidRootPart.Anchored = true
+    ts:Create(Client.Character.PrimaryPart, TweenInfo.new(Distance / Speed, Enum.EasingStyle.Linear), {CFrame = P}):Play()
 end
-local function returnball()
-    for _,v in workspace.Balls:GetChildren() do
-        if v:GetAttribute("realBall") then
-            return v
+
+local function findTarget2()
+    for _, ball in ipairs(workspace.Balls:GetChildren()) do
+        if ball:GetAttribute("realBall") then
+            return ball
         end
-     end
+    end
 end
 
 task.spawn(function()
     while true do
-        RunService.Heartbeat:Wait();
+        RunService.Heartbeat:Wait()
+        local rageParry = true  -- Assuming rageParry is meant to trigger this behavior
+
         if rageParry then
-            local ball = returnball();
-            TP(ball.CFrame - Vector3.new(0,6,0));
-            task.wait()
-            parryButtonPress:Fire();
+            local ball = findTarget2()
+
+            if ball then
+                TP(ball.CFrame - Vector3.new(0, 7, 0))
+                task.wait()
+                parryButtonPress:Fire()
+            end
         end
     end
 end)
+
 
 
 RunService.Heartbeat:Connect(function(deltaTime)
