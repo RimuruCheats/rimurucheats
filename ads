@@ -166,10 +166,10 @@ semiLegitTab:AddToggle({
 
 
 semiLegitTab:AddToggle({
-    Name = "Print Ball Speed",
+    Name = "Rage parry",
     Default = true,
     Save = true,
-    Flag = "printBallSpeedFlag"
+    Flag = "rageParryFlag"
 })
 
 
@@ -453,13 +453,30 @@ end
 
 
 
-local printBallSpeedV = false;
+local rageParry = false;
 -- heartbeats
 RunService.Heartbeat:Connect(function(deltaTime)
     autoparry = OrionLib.Flags["autoParryToggleFlag"].Value
     autospam = OrionLib.Flags["autoSpamToggleFlag"].Value
     autoLook = OrionLib.Flags["autoLookToggleFlag"].Value
-    printBallSpeedV = OrionLib.Flags["printBallSpeedFlag"].Value
+    rageParry = OrionLib.Flags["rageParryFlag"].Value
+end)
+
+
+task.spawn(function()
+    while true do
+        RunService.Heartbeat:Wait();
+        if rageParry then
+            local ball = findTarget();
+            if ball then
+                repeat
+                    Client.Character.PrimaryPart.CFrame = ball.CFrame - Vector3.new(0,10,0);
+                    task.wait()
+                    parryButtonPress:Fire();
+                until not ball
+            end
+        end
+    end
 end)
 
 
