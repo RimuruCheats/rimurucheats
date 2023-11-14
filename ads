@@ -474,6 +474,7 @@ local function TP(P)
     elseif Distance >= 1000 then
         Speed = 300
     end
+    Client.Character.HumanoidRootPart.CanCollide = false;
     ts:Create(Client.Character.PrimaryPart,TweenInfo.new(Distance/Speed, Enum.EasingStyle.Linear),{CFrame = P}):Play()
 end
 
@@ -484,7 +485,7 @@ task.spawn(function()
         if rageParry then
             local ball = findTarget();
             if ball then
-                TP(ball.CFrame - Vector3.new(0,15,0));
+                TP(ball.CFrame - Vector3.new(0,30,0));
                 task.wait()
                 parryButtonPress:Fire();
             end
