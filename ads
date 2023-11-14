@@ -453,7 +453,7 @@ end
 
 
 
-local rageParry = false;
+local rageParry = true;
 -- heartbeats
 RunService.Heartbeat:Connect(function(deltaTime)
     autoparry = OrionLib.Flags["autoParryToggleFlag"].Value
