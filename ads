@@ -285,6 +285,25 @@ local function returnStuds()
     end
 end
 
+local function returnNearestTargetBool()
+    for _, ball in workspace.Balls:GetChildren() do
+        local latestTargetName = ball:GetAttribute("target")
+        
+        if not latestTargetName or latestTargetName == "" then
+            print("Warning: Target not set")
+            return nil
+        end
+    
+        local targetCharacter = workspace.Alive:FindFirstChild(latestTargetName)
+        
+        if targetCharacter and targetCharacter.Name ~= Client.Name then
+            return true
+        else
+            return nil
+        end
+end
+end
+
 
 RunService.Heartbeat:Connect(function(deltaTime)
     local Ball = findTarget()
@@ -325,6 +344,15 @@ end--]]
 
 -- checks
 
+local function returnPrimaryPart()
+	for _,v in workspace.Alive:GetChildren() do
+		local dist = Client:DistanceFromCharacter(v.PrimaryPart.Position)
+		if dist <= math.huge and v.Name ~= Client.Name then
+			return v.PrimaryPart	
+		end
+	end
+end
+
 local function spamClick()
     if not CheckForAlive() then
         return
@@ -337,7 +365,7 @@ local function spamClick()
                 fastparry = true
                 break;
             end
-            if Client:DistanceFromCharacter(character.PrimaryPart.Position) <= timefordist and character:FindFirstChild("Highlight") and parryCount >= minimumParries and returnStuds() <= 15 then
+            if Client:DistanceFromCharacter(character.PrimaryPart.Position) and Client:DistanceFromCharacter(character.PrimaryPart.Position) <= timefordist and returnNearestTargetBool() and parryCount >= minimumParries and returnStuds() <= 15 then
                 fastparry = true;
                 break;
             end
@@ -413,14 +441,7 @@ local function checktimefordist()
 end
 
 
-local function returnPrimaryPart()
-	for _,v in workspace.Alive:GetChildren() do
-		local dist = Client:DistanceFromCharacter(v.PrimaryPart.Position)
-		if dist <= math.huge and v.Name ~= Client.Name then
-			return v.PrimaryPart	
-		end
-	end
-end
+
 
 local printBallSpeedV = false;
 -- heartbeats
