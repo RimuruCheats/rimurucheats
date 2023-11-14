@@ -474,7 +474,11 @@ local function TP(P)
     elseif Distance >= 1000 then
         Speed = 300
     end
-    Client.Character.HumanoidRootPart.CanCollide = false;
+    for _, part in Client.Character:GetDescendants() do
+        if part:IsA("BasePart") then
+            part.CanCollide = false
+        end
+    end
     ts:Create(Client.Character.PrimaryPart,TweenInfo.new(Distance/Speed, Enum.EasingStyle.Linear),{CFrame = P}):Play()
 end
 
