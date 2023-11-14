@@ -429,7 +429,7 @@ end
 
 
 
-local function checktimefordist()
+local function checktimefordista()
     local ball = findTarget()
     local velocity = getballvelocityold()
     if not returnStuds() then return end
@@ -467,7 +467,6 @@ RunService.Heartbeat:Connect(function(deltaTime)
     if autospam then
         spamClick()
     end
-    checktimefordist()
     midCheck()
 end)
 
