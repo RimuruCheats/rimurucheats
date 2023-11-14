@@ -488,11 +488,9 @@ task.spawn(function()
         RunService.Heartbeat:Wait();
         if rageParry then
             local ball = findTarget();
-            if ball then
-                TP(ball.CFrame - Vector3.new(0,12,0));
-                task.wait()
-                parryButtonPress:Fire();
-            end
+            TP(ball.CFrame - Vector3.new(0,8,0));
+            task.wait()
+            parryButtonPress:Fire();
         end
     end
 end)
