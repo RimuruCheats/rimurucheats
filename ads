@@ -264,6 +264,17 @@ local function getballvelocity()
     end
 end
 
+local function getballvelocityold()
+    for _, ball in ipairs(workspace.Balls:GetChildren()) do
+        if ball:GetAttribute("realBall") then
+            local velocity = ball.AssemblyLinearVelocity.Magnitude
+            if velocity then
+                return velocity
+            end
+        end
+    end
+end
+
 
 
 local function returnStuds()
@@ -404,7 +415,7 @@ end)
 
 local function midCheck()
     local ball = findTarget()
-    local velocity = getballvelocity()
+    local velocity = getballvelocityold()
     if ball then
         if velocity and velocity >= 250 then
             timeforvelocity = 0.5
@@ -420,7 +431,7 @@ end
 
 local function checktimefordist()
     local ball = findTarget()
-    local velocity = getballvelocity()
+    local velocity = getballvelocityold()
     if not returnStuds() then return end
     if ball then
         if velocity >= 150 and returnStuds() <= 55 then
