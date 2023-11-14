@@ -482,12 +482,19 @@ local function TP(P)
     Client.Character.HumanoidRootPart.Anchored = true;
     ts:Create(Client.Character.PrimaryPart,TweenInfo.new(Distance/Speed, Enum.EasingStyle.Linear),{CFrame = P}):Play()
 end
+local function returnball()
+    for _,v in workspace.Balls:GetChildren() do
+        if v:GetAttribute("realBall") then
+            return v
+        end
+     end
+end
 
 task.spawn(function()
     while true do
         RunService.Heartbeat:Wait();
         if rageParry then
-            local ball = function () for _,v in workspace.Balls:GetChildren() do if v:GetAttribute("realBall") then return true end end end
+            local ball = returnball();
             TP(ball.CFrame - Vector3.new(0,6,0));
             task.wait()
             parryButtonPress:Fire();
