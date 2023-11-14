@@ -595,7 +595,7 @@ local methodFunctions = {
 }
 
 local lastVelocity = 0
-local threshold = 20
+local threshold = 5
 
 local function isBallCurving()
     local currentVelocity = getballvelocity()
