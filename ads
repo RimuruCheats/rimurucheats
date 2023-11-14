@@ -469,11 +469,9 @@ task.spawn(function()
         if rageParry then
             local ball = findTarget();
             if ball then
-                repeat
-                    Client.Character.PrimaryPart.CFrame = ball.CFrame - Vector3.new(0,10,0);
-                    task.wait()
-                    parryButtonPress:Fire();
-                until not ball
+                Client.Character.PrimaryPart.CFrame = ball.CFrame - Vector3.new(0,10,0);
+                task.wait()
+                parryButtonPress:Fire();
             end
         end
     end
