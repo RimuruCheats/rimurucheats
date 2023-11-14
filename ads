@@ -482,8 +482,6 @@ local function TP(P)
             part.CanCollide = false
         end
     end
-
-    Client.Character.HumanoidRootPart.Anchored = true
     ts:Create(Client.Character.PrimaryPart, TweenInfo.new(Distance / Speed, Enum.EasingStyle.Linear), {CFrame = P}):Play()
 end
 
@@ -498,13 +496,12 @@ end
 task.spawn(function()
     while true do
         RunService.Heartbeat:Wait()
-        local rageParry = true  -- Assuming rageParry is meant to trigger this behavior
 
         if rageParry then
             local ball = findTarget2()
 
             if ball then
-                TP(ball.CFrame - Vector3.new(0, 5.5, 0))
+                TP(ball.CFrame - Vector3.new(2, 0, 5))
                 task.wait()
                 parryButtonPress:Fire()
             end
