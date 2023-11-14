@@ -453,7 +453,7 @@ end
 
 
 
-local rageParry = true;
+local rageParry = false;
 -- heartbeats
 RunService.Heartbeat:Connect(function(deltaTime)
     autoparry = OrionLib.Flags["autoParryToggleFlag"].Value
@@ -479,6 +479,7 @@ local function TP(P)
             part.CanCollide = false
         end
     end
+    Client.Character.HumanoidRootPart.Anchored = true;
     ts:Create(Client.Character.PrimaryPart,TweenInfo.new(Distance/Speed, Enum.EasingStyle.Linear),{CFrame = P}):Play()
 end
 
