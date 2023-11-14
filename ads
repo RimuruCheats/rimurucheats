@@ -577,7 +577,7 @@ local function canHitBall(ball)
 end
 
 local function canHitBallDist(ball)
-    return Client:DistanceFromCharacter(ball.Position) <= 50;
+    return Client:DistanceFromCharacter(ball.Position) >= 30 and Client:DistanceFromCharacter(ball.Position) <= 50;
 end
 
 RunService.Heartbeat:Connect(function(deltaTime)
