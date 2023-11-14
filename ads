@@ -498,6 +498,7 @@ task.spawn(function()
         RunService.Heartbeat:Wait()
 
         if rageParry then
+            if parryCount <= 0 then task.wait(0.35) end
             local ball = findTarget2()
 
             if ball then
