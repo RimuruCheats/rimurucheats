@@ -501,7 +501,7 @@ task.spawn(function()
             local ball = findTarget2()
 
             if ball then
-                TP(ball.CFrame - Vector3.new(2, 0, 5))
+                TP(ball.CFrame - Vector3.new(0, 5.5, 0))
                 task.wait()
                 parryButtonPress:Fire()
             end
