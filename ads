@@ -405,17 +405,17 @@ end)
 local function midCheck()
     local ball = findTarget()
     local velocity = getballvelocity()
-    local distance = returnStuds()
     if ball then
-        if velocity and distance and velocity >= 250 and distance <= 125 then
+        if velocity and velocity >= 250 then
             timeforvelocity = 0.5
-        elseif velocity and distance and velocity >= 300 and distance <= 140 then
+        elseif velocity and velocity >= 300 then
             timeforvelocity = 0.55
-        elseif velocity and distance and velocity >= 400 and distance <= 150 then
+        elseif velocity and velocity >= 400 then
             timeforvelocity = 0.6
         end
     end
 end
+
 
 
 local function checktimefordist()
