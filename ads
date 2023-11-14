@@ -593,7 +593,7 @@ RunService.Heartbeat:Connect(function(deltaTime)
     if printBallSpeedV then
         local ball = findTarget();
         if ball and ball.Position and velocity and velocity.Magnitude then
-            print(Client:DistanceFromCharacter(ball.Position) / velocity.Magnitude)
+            print(getballvelocityold())
         else
             print("Unable to calculate distance or velocity.")
         end
