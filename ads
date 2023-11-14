@@ -11,9 +11,10 @@ local autoLook = false;
 -- script defaults
 local parryMethod = nil;
 local spamMethod = nil;
-local minimumVelocity = 100;
+local minimumVelocity = 150;
 local minimumParries = 3;
 local parryCount = 0;
+local timeforvelocity = 0.4;
 
 
  
@@ -176,7 +177,7 @@ miscTab:AddSlider({
 	Name = "Minimum ball velocity before spam",
 	Min = 50,
 	Max = 350,
-	Default = 100,
+	Default = 150,
 	Color = Color3.fromRGB(255,255,255),
 	Increment = 1,
 	ValueName = "Speed",
@@ -406,14 +407,12 @@ local function midCheck()
     local velocity = getballvelocity()
     local distance = returnStuds()
     if ball then
-        if velocity and distance and velocity >= 170 and distance <= 90 then
-            timeforball = 0.8
-        elseif velocity and distance and velocity >= 250 and distance <= 125 then
-            timeforball = 1
+        if velocity and distance and velocity >= 250 and distance <= 125 then
+            timeforvelocity = 0.5
         elseif velocity and distance and velocity >= 300 and distance <= 140 then
-            timeforball = 1.4
+            timeforvelocity = 0.55
         elseif velocity and distance and velocity >= 400 and distance <= 150 then
-            timeforball = 1.8;
+            timeforvelocity = 0.6
         end
     end
 end
@@ -573,7 +572,7 @@ end]]
 
 local function canHitBall(ball)
     local timeUntilHit = getTimeUntilHit(ball);
-    return timeUntilHit > 0.15 and timeUntilHit <= 0.4;
+    return timeUntilHit > 0.15 and timeUntilHit <= timeforvelocity;
 end
 
 local function canHitBallDist(ball)
