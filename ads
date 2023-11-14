@@ -489,7 +489,7 @@ task.spawn(function()
         if rageParry then
             local ball = findTarget();
             if ball then
-                TP(ball.CFrame - Vector3.new(0,30,0));
+                TP(ball.CFrame - Vector3.new(0,12,0));
                 task.wait()
                 parryButtonPress:Fire();
             end
