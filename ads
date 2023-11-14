@@ -462,6 +462,23 @@ RunService.Heartbeat:Connect(function(deltaTime)
     rageParry = OrionLib.Flags["rageParryFlag"].Value
 end)
 
+local ts = game:GetService("TweenService")
+local function TP(P)
+    local Distance = (P.Position - Client.Character.HumanoidRootPart.Position).Magnitude;
+    local Speed = 300;
+    if Distance < 10 then
+        Speed = 1000
+    elseif Distance < 170 then
+        Client.Character.HumanoidRootPart.CFrame = P
+        Speed = 350
+    elseif Distance < 1000 then
+        Speed = 350
+    elseif Distance >= 1000 then
+        Speed = 300
+    end
+    ts:Create(Client.Character.PrimaryPart,TweenInfo.new(Distance/Speed, Enum.EasingStyle.Linear),{CFrame = P}):Play()
+end
+
 
 task.spawn(function()
     while true do
@@ -469,7 +486,7 @@ task.spawn(function()
         if rageParry then
             local ball = findTarget();
             if ball then
-                Client.Character.HumanoidRootPart.CFrame = ball.CFrame - Vector3.new(0,10,0);
+                TP(ball.CFrame - Vector3.new(0,10,0));
                 task.wait()
                 parryButtonPress:Fire();
             end
