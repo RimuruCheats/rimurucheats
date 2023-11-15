@@ -620,7 +620,7 @@ end]]
 
 local function canHitBall(ball)
     local timeUntilHit = getTimeUntilHit(ball);
-    return timeUntilHit > 0.15 and timeUntilHit <= timeforvelocity;
+    return timeUntilHit > 0.15 and timeUntilHit <= 0.4;
 end
 
 local function canHitBallDist(ball)
@@ -652,7 +652,7 @@ local methodFunctions = {
 }
 
 local lastVelocity = 0
-local threshold = 8
+local threshold = 10
 
 local function isBallCurving()
     local currentVelocity = getballvelocity()
