@@ -652,7 +652,7 @@ local methodFunctions = {
 }
 
 local lastVelocity = 0
-local threshold = 5
+local threshold = 8
 
 local function isBallCurving()
     local currentVelocity = getballvelocity()
@@ -708,7 +708,7 @@ task.spawn(function()
 
                 while ball and canHitBall(ball) do
                     if parryMethod == "curve" then
-                        task.wait(0.3)
+                        task.wait(0.2)
                     end
 
                     RunService.Heartbeat:Wait();
@@ -754,7 +754,7 @@ RunService.Heartbeat:Connect(function(deltaTime)
     pcall(function()
         local ball = findTarget()
         local distance = Client:DistanceFromCharacter(ball.Position)
-        if ball and distance and distance <= 15 then
+        if ball and distance and distance <= 20 then
             parryButtonPress:Fire();
         end
     end)
