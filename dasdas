@@ -433,28 +433,34 @@ local function findTarget2()
 end
 
 local function longCheck()
-    local ball = findTarget()
-    local velocity = getballvelocityold()
-    if ball then
-        if velocity and velocity >= 350 then
-            timeforvelocity = 0.5
-        elseif velocity and velocity >= 450 then
-            timeforvelocity = 0.55
+    pcall(function()
+        local ball = findTarget()
+        local velocity = getballvelocityold()
+        if ball then
+            if velocity and velocity >= 350 then
+                timeforvelocity = 0.5
+            elseif velocity and velocity >= 450 then
+                timeforvelocity = 0.55
+            end
         end
-    end
+    end)
+
 end
 
 local function midDistCheck()
-    local ball = findTarget2()
-    local distance = returnStuds()
-    
-    if ball and distance then
-        if velocity and velocity >= 300 and distance <= 140 then
-            timeforvelocity = 0.7
-        elseif velocity and velocity >= 400 and distance <= 150 then
-            timeforvelocity = 0.8
+    pcall(function()
+        local ball = findTarget2()
+        local distance = returnStuds()
+        
+        if ball and distance then
+            if velocity and velocity >= 300 and distance <= 140 then
+                timeforvelocity = 0.7
+            elseif velocity and velocity >= 400 and distance <= 150 then
+                timeforvelocity = 0.8
+            end
         end
-    end
+    end)
+
 end
 
 
