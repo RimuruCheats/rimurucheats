@@ -11,7 +11,7 @@ local RunService = game:GetService("RunService");
 local attackFast = false;
 local isNoclip = false;
 
-local autoLevel = false;
+local autoLevel = true;
 
 -- stats
 local magbring = 400;
