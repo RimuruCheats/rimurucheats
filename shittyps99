@@ -1,4 +1,3 @@
-
 local Players = game:GetService("Players")
 local Workspace = game:GetService("Workspace")
 local RunService = game:GetService("RunService")
@@ -25,7 +24,7 @@ function ShydeHub.new(screenGui)
     self.frame = Instance.new("Frame", screenGui)
     self.frame.Size = UDim2.new(0, 300, 0, 350)
     self.frame.Position = UDim2.new(0.5, -150, 0, 0)
-    self.frame.BackgroundColor3 = Color3.fromRGB(0, 0, 0)
+    self.frame.BackgroundColor3 = Color3.fromRGB(255, 255, 255)
     self.frame.BorderSizePixel = 0 -- Remove the frame border
 
     -- Add shadow effect to the frame
@@ -85,7 +84,7 @@ function ShydeHub:CreateTab(text)
 
     local tabFrame = Instance.new("Frame")
     tabFrame.Size = UDim2.new(1, 0, 1, -30)
-    tabFrame.Position = UDim2.new(0, 0, 0, 0)
+    tabFrame.Position = UDim2.new(0, 0, 0, 30)
     tabFrame.BackgroundColor3 = Color3.fromRGB(255, 255, 255)
     tabFrame.Visible = false
     tabFrame.Parent = self.frame
@@ -118,7 +117,7 @@ function ShydeHub:CreateToggle(tab, text, currentValue, callback)
     toggle.Text = currentValue and "On" or "Off"
     toggle.BackgroundColor3 = Color3.fromRGB(150, 150, 150)
     toggle.TextColor3 = Color3.fromRGB(0, 0, 0)
-    toggle.Parent = tab.Frame
+    toggle.Parent = tab
     toggle.MouseButton1Click:Connect(function()
         currentValue = not currentValue
         toggle.Text = currentValue and "On" or "Off"
@@ -135,7 +134,7 @@ function ShydeHub:CreateButton(tab, text, callback)
     button.BackgroundColor3 = Color3.fromRGB(150, 150, 150)
     button.TextColor3 = Color3.fromRGB(0, 0, 0)
     button.FontWeight = Enum.FontWeight.Bold
-    button.Parent = tab.Frame
+    button.Parent = tab
     button.MouseButton1Click:Connect(callback)
     self:UpdateLayout()
     return button
@@ -145,7 +144,7 @@ function ShydeHub:CreateSlider(tab, min, max, currentValue, callback)
     local sliderFrame = Instance.new("Frame")
     sliderFrame.Size = UDim2.new(0, 280, 0, 30)
     sliderFrame.BackgroundColor3 = Color3.fromRGB(150, 150, 150)
-    sliderFrame.Parent = tab.Frame
+    sliderFrame.Parent = tab
 
     local sliderButton = Instance.new("TextButton")
     sliderButton.Size = UDim2.new(0, 25, 1, 0)
@@ -187,7 +186,7 @@ function ShydeHub:CreateNotification(tab, text, duration)
     notification.Text = text
     notification.BackgroundColor3 = Color3.fromRGB(50, 50, 50)
     notification.TextColor3 = Color3.fromRGB(255, 255, 255)
-    notification.Parent = tab.Frame
+    notification.Parent = tab
     self:UpdateLayout()
 
     game:GetService("Debris"):AddItem(notification, duration)
@@ -200,7 +199,7 @@ function ShydeHub:CreateTextbox(tab, placeholderText, currentValue, callback)
     textbox.Text = currentValue
     textbox.PlaceholderText = placeholderText
     textbox.BackgroundColor3 = Color3.fromRGB(255, 255, 255)
-    textbox.Parent = tab.Frame
+    textbox.Parent = tab
     textbox.FocusLost:Connect(function(enterPressed)
         if enterPressed then
             callback(textbox.Text)
