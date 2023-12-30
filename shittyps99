@@ -96,23 +96,18 @@ end
 function GuiLibrary:addTab(name)
     local tab = Instance.new("TextButton", self.window)
     tab.Name = name
-    tab.Text = name
+    tab.Text = ""  -- Clear the text of the TextButton
     tab.BackgroundColor3 = Color3.fromRGB(45, 45, 45)
     tab.ZIndex = 2
     self.tabs[name] = tab
 
-    -- Check if the TextLabel property is available
-    if tab:IsA("TextButton") and tab:FindFirstChild("TextLabel") then
-        tab.TextLabel.TextColor3 = Color3.new(1, 1, 1)
-    elseif tab:IsA("TextButton") then
-        -- Create a TextLabel if it doesn't exist and set the TextColor3
-        local textLabel = Instance.new("TextLabel", tab)
-        textLabel.Name = "TextLabel"
-        textLabel.Size = UDim2.new(1, 0, 1, 0)
-        textLabel.Position = UDim2.new(0, 0, 0, 0)
-        textLabel.Text = name
-        textLabel.TextColor3 = Color3.new(1, 1, 1)
-    end
+    -- Create a TextLabel for the tab and set its properties
+    local textLabel = Instance.new("TextLabel", tab)
+    textLabel.Name = "TextLabel"
+    textLabel.Size = UDim2.new(1, 0, 1, 0)
+    textLabel.Position = UDim2.new(0, 0, 0, 0)
+    textLabel.Text = name
+    textLabel.TextColor3 = Color3.new(1, 1, 1)
 
     -- Auto-sort tabs
     self:autoSortTabs()
