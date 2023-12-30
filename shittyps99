@@ -1,172 +1,64 @@
-local player = game.Players.LocalPlayer
-local mouse = player:GetMouse()
-local uis = game:GetService("UserInputService")
+local PlayerGui = game.Players.LocalPlayer.PlayerGui
 
-local ScreenGui = Instance.new("ScreenGui")
-local MainFrame = Instance.new("Frame")
-local Title = Instance.new("TextLabel")
-local CloseButton = Instance.new("TextButton")
-local TabsFrame = Instance.new("Frame")
-local ResetAimbotButton = Instance.new("TextButton")
-local dragging
-local dragInput
-local dragStart
-local startPos
-
--- Function to update the GUI position
-local function update(input)
-	local delta = input.Position - dragStart
-	MainFrame.Position = UDim2.new(startPos.X.Scale, startPos.X.Offset + delta.X, startPos.Y.Scale, startPos.Y.Offset + delta.Y)
+-- Function to create a shadow
+function createShadow(parent)
+    for i = 1, 5 do -- Create 5 frames with decreasing transparency to simulate a shadow
+        local shadowFrame = Instance.new("Frame")
+        shadowFrame.Name = "Shadow" .. i
+        shadowFrame.Parent = parent
+        shadowFrame.BackgroundColor3 = Color3.new(0, 0, 0)
+        shadowFrame.BorderSizePixel = 0
+        shadowFrame.ZIndex = parent.ZIndex - 1
+        shadowFrame.Size = UDim2.new(1, 10, 1, 10)
+        shadowFrame.Position = UDim2.new(0, -5 * i, 0, -5 * i)
+        shadowFrame.BackgroundTransparency = 0.2 + (i * 0.15) -- Increasing transparency
+        shadowFrame.ClipsDescendants = true
+    end
 end
 
--- Function to start dragging
-local function onMouseDown(input)
-	if input.UserInputType == Enum.UserInputType.MouseButton1 then
-		dragging = true
-		dragStart = input.Position
-		startPos = MainFrame.Position
-		
-		input.Changed:Connect(function()
-			if input.UserInputState == Enum.UserInputState.End then
-				dragging = false
-			end
-		end)
-	end
+-- Function to create a window
+function createWindow()
+    local window = Instance.new("Frame", PlayerGui)
+    window.Name = "ShydeHubWindow"
+    window.BackgroundColor3 = Color3.fromRGB(44, 44, 44)
+    window.BorderSizePixel = 0
+    window.Size = UDim2.new(0, 300, 0, 200) -- Keep size the same
+    window.Position = UDim2.new(0.5, -150, 0.5, -100) -- Center on screen
+    window.ZIndex = 2
+
+    createShadow(window)
+
+    -- Title setup
+    local title = Instance.new("TextLabel", window)
+    title.Name = "Title"
+    title.BackgroundColor3 = Color3.fromRGB(35, 35, 35)
+    title.Size = UDim2.new(1, 0, 0, 24)
+    title.Font = Enum.Font.GothamBold
+    title.Text = "Shyde Hub"
+    title.TextColor3 = Color3.fromRGB(255, 255, 255)
+    title.TextSize = 18
+    title.ZIndex = 3
+
+    -- Close button
+    local closeButton = Instance.new("TextButton", title)
+    closeButton.Name = "CloseButton"
+    closeButton.Text = "X"
+    closeButton.BackgroundColor3 = Color3.fromRGB(35, 35, 35)
+    closeButton.TextColor3 = Color3.fromRGB(255, 255, 255)
+    closeButton.Size = UDim2.new(0, 24, 1, 0)
+    closeButton.Position = UDim2.new(1, -24, 0, 0)
+    closeButton.Font = Enum.Font.Gotham
+    closeButton.TextSize = 18
+    closeButton.ZIndex = 3
+
+    closeButton.MouseButton1Click:Connect(function()
+        window:Destroy()
+    end)
+
+    -- Autosort elements function remains the same as previous example...
+
+    return window
 end
 
--- Function to detect dragging
-local function onInputChanged(input)
-	if input.UserInputType == Enum.UserInputType.MouseMovement then
-		dragInput = input
-	end
-end
-
--- Setup ScreenGui
-ScreenGui.Parent = player.PlayerGui
-
--- Setup MainFrame
-MainFrame.Name = "MainFrame"
-MainFrame.Parent = ScreenGui
-MainFrame.BackgroundColor3 = Color3.fromRGB(44, 44, 44)
-MainFrame.BorderSizePixel = 0
-MainFrame.Position = UDim2.new(0.5, -150, 0.5, -100)
-MainFrame.Size = UDim2.new(0, 300, 0, 200)
-MainFrame.Active = true
-MainFrame.Draggable = false -- We're making it draggable with a script
-
--- Setup Title
-Title.Name = "Title"
-Title.Parent = MainFrame
-Title.BackgroundColor3 = Color3.fromRGB(35, 35, 35)
-Title.Size = UDim2.new(1, 0, 0, 24)
-Title.Font = Enum.Font.GothamBold
-Title.Text = "Shyde Hub"
-Title.TextColor3 = Color3.fromRGB(255, 255, 255)
-Title.TextSize = 18
-Title.ZIndex = 2
-
--- Setup CloseButton
-CloseButton.Name = "CloseButton"
-CloseButton.Parent = Title
-CloseButton.BackgroundColor3 = Color3.fromRGB(255, 0, 0)
-CloseButton.Size = UDim2.new(0, 24, 1, 0)
-CloseButton.Font = Enum.Font.GothamBold
-CloseButton.Text = "X"
-CloseButton.TextColor3 = Color3.fromRGB(255, 255, 255)
-CloseButton.TextSize = 18
-CloseButton.ZIndex = 2
-
--- Setup TabsFrame (container for tab buttons)
-TabsFrame.Name = "TabsFrame"
-TabsFrame.Parent = MainFrame
-TabsFrame.BackgroundColor3 = Color3.fromRGB(55, 55, 55)
-TabsFrame.BorderSizePixel = 0
-TabsFrame.Position = UDim2.new(0, 0, 0, 24)
-TabsFrame.Size = UDim2.new(1, 0, 0, 24)
-TabsFrame.ZIndex = 2
-
--- Setup ResetAimbotButton
-ResetAimbotButton.Name = "test"
-ResetAimbotButton.Parent = MainFrame
-ResetAimbotButton.BackgroundColor3 = Color3.fromRGB(25, 25, 25)
-ResetAimbotButton.Size = UDim2.new(1, -10, 0, 24)
-ResetAimbotButton.Position = UDim2.new(0, 5, 0, 52)
-ResetAimbotButton.Font = Enum.Font.GothamBold
-ResetAimbotButton.Text = "Test"
-ResetAimbotButton.TextColor3 = Color3.fromRGB(255, 255, 255)
-ResetAimbotButton.TextSize = 18
-ResetAimbotButton.ZIndex = 2
-
--- Event handlers for draggable functionality
-MainFrame.InputBegan:Connect(onMouseDown)
-MainFrame.InputChanged:Connect(onInputChanged)
-uis.InputChanged:Connect(function(input)
-	if input == dragInput and dragging then
-		update(input)
-	end
-end)
-
--- Close button functionality
-CloseButton.MouseButton1Click:Connect(function()
-	ScreenGui:Destroy()
-end)
-
-
--- Add shadow effect
-local Shadow = Instance.new("ImageLabel")
-Shadow.Name = "Shadow"
-Shadow.Parent = MainFrame
-Shadow.BackgroundTransparency = 1
-Shadow.Image = "rbxassetid://1316045217" -- Replace with your own shadow image asset
-Shadow.ScaleType = Enum.ScaleType.Slice
-Shadow.SliceCenter = Rect.new(10, 10, 118, 118)
-Shadow.Size = UDim2.new(1, 10, 1, 10)
-Shadow.Position = UDim2.new(0, -5, 0, -5)
-Shadow.ZIndex = 1
-
--- Setup Tabs
-local Tab1 = Instance.new("TextButton")
-local Tab2 = Instance.new("TextButton")
--- ... Add as many tabs as needed
-
--- Tab1 setup
-Tab1.Name = "Tab1"
-Tab1.Parent = TabsFrame
-Tab1.BackgroundColor3 = Color3.fromRGB(55, 55, 55) -- Active tab color
-Tab1.Size = UDim2.new(0, 100, 1, 0)
-Tab1.Font = Enum.Font.GothamBold
-Tab1.Text = "Tab1"
-Tab1.TextColor3 = Color3.fromRGB(255, 255, 255)
-Tab1.TextSize = 18
-Tab1.ZIndex = 3
-
--- Tab2 setup
-Tab2.Name = "Tab2"
-Tab2.Parent = TabsFrame
-Tab2.BackgroundColor3 = Color3.fromRGB(45, 45, 45) -- Inactive tab color
-Tab2.Size = UDim2.new(0, 100, 1, 0)
-Tab2.Position = UDim2.new(0, 100, 0, 0) -- Position right next to Tab1
-Tab2.Font = Enum.Font.GothamBold
-Tab2.Text = "Tab2"
-Tab2.TextColor3 = Color3.fromRGB(200, 200, 200) -- Inactive tab text color
-Tab2.TextSize = 18
-Tab2.ZIndex = 3
-
--- ... [Continue with additional tabs]
-
--- ... [Continue with the rest of the GUI setup]
-
--- Event handlers for tab switching (example for two tabs)
-Tab1.MouseButton1Click:Connect(function()
-    Tab1.BackgroundColor3 = Color3.fromRGB(55, 55, 55) -- Active color
-    Tab2.BackgroundColor3 = Color3.fromRGB(45, 45, 45) -- Inactive color
-    -- Show Tab1 content
-    -- Hide Tab2 content
-end)
-
-Tab2.MouseButton1Click:Connect(function()
-    Tab1.BackgroundColor3 = Color3.fromRGB(45, 45, 45) -- Inactive color
-    Tab2.BackgroundColor3 = Color3.fromRGB(55, 55, 55) -- Active color
-    -- Hide Tab1 content
-    -- Show Tab2 content
-end)
+-- Create the window
+local myWindow = createWindow()
