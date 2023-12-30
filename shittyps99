@@ -98,7 +98,6 @@ function GuiLibrary:addTab(name)
     tab.Name = name
     tab.Text = ""  -- Clear the text of the TextButton
     tab.BackgroundColor3 = Color3.fromRGB(45, 45, 45)
-    tab.ZIndex = 2
     self.tabs[name] = tab
 
     -- Create a TextLabel for the tab and set its properties
