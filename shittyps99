@@ -101,10 +101,22 @@ function GuiLibrary:addTab(name)
     tab.ZIndex = 2
     self.tabs[name] = tab
 
+    -- Check if the TextLabel property is available
+    if tab:IsA("TextButton") and tab:FindFirstChild("TextLabel") then
+        tab.TextLabel.TextColor3 = Color3.new(1, 1, 1)
+    elseif tab:IsA("TextButton") then
+        -- Create a TextLabel if it doesn't exist and set the TextColor3
+        local textLabel = Instance.new("TextLabel", tab)
+        textLabel.Name = "TextLabel"
+        textLabel.Size = UDim2.new(1, 0, 1, 0)
+        textLabel.Position = UDim2.new(0, 0, 0, 0)
+        textLabel.Text = name
+        textLabel.TextColor3 = Color3.new(1, 1, 1)
+    end
+
     -- Auto-sort tabs
     self:autoSortTabs()
 end
-
 -- Method to auto-sort tabs and adjust the frame size
 function GuiLibrary:autoSortTabs()
     local xPos = 0
