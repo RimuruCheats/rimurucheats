@@ -20,21 +20,54 @@ RunService.Heartbeat:Connect(collectOrbs) -- Always listening, but action depend
 local ShydeHub = {}
 ShydeHub.__index = ShydeHub
 
-local ShydeHub = {}
-ShydeHub.__index = ShydeHub
-
 function ShydeHub.new(screenGui)
     local self = setmetatable({screenGui = screenGui, elements = {}, nextY = 0, currentTab = 1}, ShydeHub)
     self.frame = Instance.new("Frame", screenGui)
-    self.frame.Size = UDim2.new(0, 300, 0, 300) -- Set the size to create a square
+    self.frame.Size = UDim2.new(0, 300, 0, 350)
     self.frame.Position = UDim2.new(0.5, -150, 0, 0)
     self.frame.BackgroundColor3 = Color3.fromRGB(0, 0, 0)
+    self.frame.BorderSizePixel = 0 -- Remove the frame border
+
+    -- Add shadow effect to the frame
+    local shadow = Instance.new("ImageLabel")
+    shadow.Size = UDim2.new(1, 12, 1, 12)
+    shadow.Position = UDim2.new(0, -6, 0, -6)
+    shadow.BackgroundTransparency = 1
+    shadow.Image = "rbxassetid://1316045217" -- Shadow image asset ID
+    shadow.ImageColor3 = Color3.new(0, 0, 0)
+    shadow.ImageTransparency = 0.6
+    shadow.Parent = self.frame
+
+    -- Make the frame draggable
+    local isDragging = false
+    local dragStart = nil
+
+    self.frame.InputBegan:Connect(function(input)
+        if input.UserInputType == Enum.UserInputType.MouseButton1 then
+            isDragging = true
+            dragStart = input.Position
+        end
+    end)
+
+    game:GetService("UserInputService").InputChanged:Connect(function(input)
+        if isDragging and input.UserInputType == Enum.UserInputType.MouseMovement then
+            local delta = input.Position - dragStart
+            self.frame.Position = UDim2.new(0, self.frame.Position.X.Offset + delta.X, 0, self.frame.Position.Y.Offset + delta.Y)
+            dragStart = input.Position
+        end
+    end)
+
+    game:GetService("UserInputService").InputEnded:Connect(function(input)
+        if input.UserInputType == Enum.UserInputType.MouseButton1 then
+            isDragging = false
+        end
+    end)
 
     return self
 end
 
 function ShydeHub:UpdateLayout()
-    local yOffset = 40
+    local yOffset = 45
     for i, element in ipairs(self.elements) do
         element.Frame.Position = UDim2.new(0, (i - 1) * 85, 0, yOffset)
         element.Frame.Visible = i == self.currentTab
@@ -45,15 +78,27 @@ function ShydeHub:CreateTab(text)
     local tabButton = Instance.new("TextButton")
     tabButton.Size = UDim2.new(0, 80, 0, 30)
     tabButton.Text = text
-    tabButton.BackgroundColor3 = Color3.fromRGB(255, 255, 255)
+    tabButton.BackgroundColor3 = Color3.fromRGB(200, 200, 200)
+    tabButton.TextColor3 = Color3.fromRGB(0, 0, 0)
+    tabButton.FontWeight = Enum.FontWeight.Bold
     tabButton.Parent = self.frame
 
     local tabFrame = Instance.new("Frame")
-    tabFrame.Size = UDim2.new(1, 0, 1, 0)
-    tabFrame.Position = UDim2.new(0, 0, 0, 40)
-    tabFrame.BackgroundColor3 = Color3.fromRGB(0, 0, 0)
+    tabFrame.Size = UDim2.new(1, 0, 1, -45)
+    tabFrame.Position = UDim2.new(0, 0, 0, 45)
+    tabFrame.BackgroundColor3 = Color3.fromRGB(200, 200, 200)
     tabFrame.Visible = false
     tabFrame.Parent = self.frame
+
+    -- Add shadow effect to the tab frame
+    local tabShadow = Instance.new("ImageLabel")
+    tabShadow.Size = UDim2.new(1, 12, 1, 12)
+    tabShadow.Position = UDim2.new(0, -6, 0, -6)
+    tabShadow.BackgroundTransparency = 1
+    tabShadow.Image = "rbxassetid://1316045217" -- Shadow image asset ID
+    tabShadow.ImageColor3 = Color3.new(0, 0, 0)
+    tabShadow.ImageTransparency = 0.6
+    tabShadow.Parent = tabFrame
 
     table.insert(self.elements, {Button = tabButton, Frame = tabFrame})
 
@@ -71,7 +116,8 @@ function ShydeHub:CreateToggle(tab, text, currentValue, callback)
     local toggle = Instance.new("TextButton")
     toggle.Size = UDim2.new(0, 280, 0, 30)
     toggle.Text = currentValue and "On" or "Off"
-    toggle.BackgroundColor3 = Color3.fromRGB(255, 255, 255)
+    toggle.BackgroundColor3 = Color3.fromRGB(150, 150, 150)
+    toggle.TextColor3 = Color3.fromRGB(0, 0, 0)
     toggle.Parent = tab.Frame
     toggle.MouseButton1Click:Connect(function()
         currentValue = not currentValue
@@ -86,7 +132,9 @@ function ShydeHub:CreateButton(tab, text, callback)
     local button = Instance.new("TextButton")
     button.Size = UDim2.new(0, 280, 0, 30)
     button.Text = text
-    button.BackgroundColor3 = Color3.fromRGB(255, 255, 255)
+    button.BackgroundColor3 = Color3.fromRGB(150, 150, 150)
+    button.TextColor3 = Color3.fromRGB(0, 0, 0)
+    button.FontWeight = Enum.FontWeight.Bold
     button.Parent = tab.Frame
     button.MouseButton1Click:Connect(callback)
     self:UpdateLayout()
@@ -96,13 +144,13 @@ end
 function ShydeHub:CreateSlider(tab, min, max, currentValue, callback)
     local sliderFrame = Instance.new("Frame")
     sliderFrame.Size = UDim2.new(0, 280, 0, 30)
-    sliderFrame.BackgroundColor3 = Color3.fromRGB(200, 200, 200)
+    sliderFrame.BackgroundColor3 = Color3.fromRGB(150, 150, 150)
     sliderFrame.Parent = tab.Frame
 
     local sliderButton = Instance.new("TextButton")
     sliderButton.Size = UDim2.new(0, 25, 1, 0)
     sliderButton.Text = ""
-    sliderButton.BackgroundColor3 = Color3.fromRGB(255, 255, 255)
+    sliderButton.BackgroundColor3 = Color3.fromRGB(0, 0, 0)
     sliderButton.Parent = sliderFrame
 
     local function updateSlider(position)
@@ -162,14 +210,51 @@ function ShydeHub:CreateTextbox(tab, placeholderText, currentValue, callback)
     return textbox
 end
 
+-- Create a ScreenGui to host the interface
+local screenGui = Instance.new("ScreenGui")
+screenGui.Parent = game.Players.LocalPlayer.PlayerGui
 
-local playerGui = game.Players.LocalPlayer:WaitForChild("PlayerGui")
-local screenGui = Instance.new("ScreenGui", playerGui)
-
+-- Create a ShydeHub instance
 local hub = ShydeHub.new(screenGui)
-hub:CreateTab("Tab 1")
-hub:CreateToggle("Toggle Me", true, function(state) print("Toggle state: " .. tostring(state)) end)
-hub:CreateButton("Click Me", function() print("Button clicked") end)
-hub:CreateSlider(0, 100, 50, function(value) print("Slider value: " .. tostring(value)) end)
-hub:CreateNotification("Hello, World!", 5)
-hub:CreateTextbox("Type here...", "Sample text", function(text) print("Textbox input: " .. text) end)
+
+-- Create tabs
+local tab1 = hub:CreateTab("Tab 1")
+local tab2 = hub:CreateTab("Tab 2")
+
+-- Add elements to Tab 1
+hub:CreateToggle(tab1, "Toggle 1", false, function(value)
+    print("Toggle 1 value: " .. tostring(value))
+end)
+
+hub:CreateButton(tab1, "Button 1", function()
+    print("Button 1 clicked")
+end)
+
+hub:CreateSlider(tab1, 0, 100, 50, function(value)
+    print("Slider 1 value: " .. tostring(value))
+end)
+
+hub:CreateNotification(tab1, "Notification 1", 5)
+
+hub:CreateTextbox(tab1, "Enter text", "Default Text", function(text)
+    print("Textbox 1 text: " .. text)
+end)
+
+-- Add elements to Tab 2
+hub:CreateToggle(tab2, "Toggle 2", true, function(value)
+    print("Toggle 2 value: " .. tostring(value))
+end)
+
+hub:CreateButton(tab2, "Button 2", function()
+    print("Button 2 clicked")
+end)
+
+hub:CreateSlider(tab2, 0, 1, 0.5, function(value)
+    print("Slider 2 value: " .. tostring(value))
+end)
+
+hub:CreateNotification(tab2, "Notification 2", 3)
+
+hub:CreateTextbox(tab2, "Enter text", "Hello, World!", function(text)
+    print("Textbox 2 text: " .. text)
+end)
