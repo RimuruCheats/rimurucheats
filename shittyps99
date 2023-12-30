@@ -1,9 +1,8 @@
-local player = game:GetService("Players").LocalPlayer
-local PlayerGui = player:WaitForChild("PlayerGui")
+local CoreGui = game:GetService("CoreGui")
 
 -- Function to create a shadow
 function createShadow(parent)
-    for i = 1, 5 do
+    for i = 1, 5 do -- Create 5 frames with decreasing transparency to simulate a shadow
         local shadowFrame = Instance.new("Frame")
         shadowFrame.Name = "Shadow" .. i
         shadowFrame.Parent = parent
@@ -12,23 +11,24 @@ function createShadow(parent)
         shadowFrame.ZIndex = parent.ZIndex - 1
         shadowFrame.Size = UDim2.new(1, 10, 1, 10)
         shadowFrame.Position = UDim2.new(0, -5 * i, 0, -5 * i)
-        shadowFrame.BackgroundTransparency = 0.2 + (i * 0.15)
+        shadowFrame.BackgroundTransparency = 0.2 + (i * 0.15) -- Increasing transparency
         shadowFrame.ClipsDescendants = true
     end
 end
 
 -- Function to create a window
 function createWindow()
-    local window = Instance.new("Frame", PlayerGui)
+    local window = Instance.new("Frame", CoreGui)
     window.Name = "ShydeHubWindow"
     window.BackgroundColor3 = Color3.fromRGB(44, 44, 44)
     window.BorderSizePixel = 0
-    window.Size = UDim2.new(0, 300, 0, 200)
-    window.Position = UDim2.new(0.5, -150, 0.5, -100)
+    window.Size = UDim2.new(0, 300, 0, 200) -- Keep size the same
+    window.Position = UDim2.new(0.5, -150, 0.5, -100) -- Center on screen
     window.ZIndex = 2
 
     createShadow(window)
 
+    -- Title setup
     local title = Instance.new("TextLabel", window)
     title.Name = "Title"
     title.BackgroundColor3 = Color3.fromRGB(35, 35, 35)
@@ -39,6 +39,7 @@ function createWindow()
     title.TextSize = 18
     title.ZIndex = 3
 
+    -- Close button
     local closeButton = Instance.new("TextButton", title)
     closeButton.Name = "CloseButton"
     closeButton.Text = "X"
@@ -54,8 +55,10 @@ function createWindow()
         window:Destroy()
     end)
 
+    -- Autosort elements function remains the same as previous example...
+
     return window
 end
 
--- Create the window
-createWindow()
+-- Create the windowQ
+local myWindow = createWindow()
