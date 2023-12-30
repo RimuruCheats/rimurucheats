@@ -55,6 +55,14 @@ function GuiLibrary.createWindow(parent)
     titleFrame.Size = UDim2.new(1, 0, 0, 24)
     titleFrame.ZIndex = 2
 
+    local tabFrame = Instance.new("Frame", window)
+    tabFrame.Name = "TabFrame"
+    tabFrame.BackgroundColor3 = Color3.fromRGB(55, 55, 55) -- TabFrame background color
+    tabFrame.BorderSizePixel = 0
+    tabFrame.Size = UDim2.new(1, 0, 0, 50) -- TabFrame size, make it larger for visibility
+    tabFrame.Position = UDim2.new(0, 0, 0, 24) -- Positioned below the TitleFrame
+    tabFrame.ZIndex = 2
+
     -- Title Label
     local title = Instance.new("TextLabel", titleFrame)
     title.Name = "Title"
@@ -73,37 +81,31 @@ function GuiLibrary.createWindow(parent)
 end
 
 -- Function to create a Tab Frame
-function GuiLibrary.createTabFrame(window)
-    local tabFrame = Instance.new("Frame", window)
-    tabFrame.Name = "TabFrame"
-    tabFrame.BackgroundColor3 = Color3.fromRGB(55, 55, 55) -- Darker background for tabs
-    tabFrame.BorderSizePixel = 0
-    tabFrame.Size = UDim2.new(1, 0, 0, 50) -- Updated size for visibility
-    tabFrame.Position = UDim2.new(0, 0, 0, 24) -- Positioned below the title bar
-    tabFrame.ZIndex = 2
+function GuiLibrary.createTab(window, tabName)
+    local tabFrame = window:FindFirstChild("TabFrame")
+    if not tabFrame then
+        error("TabFrame not found in window")
+        return nil
+    end
 
-    return tabFrame
-end
-
--- Function to create a Tab
-function GuiLibrary.createTab(tabFrame, tabName)
-    local tab = Instance.new("TextButton", tabFrame)
+    local tab = Instance.new("TextButton")
     tab.Name = tabName
+    tab.Parent = tabFrame
     tab.BackgroundColor3 = Color3.fromRGB(45, 45, 45) -- Tab color
-    tab.Size = UDim2.new(0, 100, 1, 0) -- Tab size, perpendicular rectangle
-    tab.Text = tabName
+    tab.Size = UDim2.new(0, 100, 0, 24) -- Correct size for small perpendicular rectangle
     tab.ZIndex = 3
     tab.TextColor3 = Color3.fromRGB(255, 255, 255)
     tab.Font = Enum.Font.SourceSans
     tab.TextSize = 18
+    tab.Text = tabName
 
     -- Auto-sorting for tabs
     local function autoSort()
         local xPos = 0
-        for i, element in ipairs(tabFrame:GetChildren()) do
+        for _, element in ipairs(tabFrame:GetChildren()) do
             if element:IsA("TextButton") then
                 element.Position = UDim2.new(0, xPos, 0, 0)
-                xPos = xPos + element.AbsoluteSize.X + 2 -- Add spacing between tabs
+                xPos = xPos + element.Size.X.Offset -- Place the next tab right next to the current one
             end
         end
     end
@@ -111,7 +113,7 @@ function GuiLibrary.createTab(tabFrame, tabName)
     tabFrame.ChildAdded:Connect(autoSort)
     tabFrame.ChildRemoved:Connect(autoSort)
 
-    autoSort() -- Run auto-sort once to update positions
+    autoSort() -- Sort tabs when a new tab is created
 
     return tab
 end
