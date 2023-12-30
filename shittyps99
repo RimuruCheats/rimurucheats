@@ -1,0 +1,187 @@
+
+local Players = game:GetService("Players")
+local Workspace = game:GetService("Workspace")
+local RunService = game:GetService("RunService")
+local Client = Players.LocalPlayer
+local Orbs = Workspace["__THINGS"].Orbs
+
+local orbToggle = false;
+
+local function collectOrbs()
+    if orbToggle and Client.Character and Client.Character:FindFirstChild("HumanoidRootPart") then
+        local HRP = Client.Character.HumanoidRootPart
+        for _, orb in pairs(Orbs:GetChildren()) do
+            orb.CFrame = HRP.CFrame
+        end
+    end
+end
+RunService.Heartbeat:Connect(collectOrbs) -- Always listening, but action depends on toggle
+
+local ShydeHub = {}
+ShydeHub.__index = ShydeHub
+
+function ShydeHub.new(screenGui)
+    local self = setmetatable({screenGui = screenGui, elements = {}, nextY = 0}, ShydeHub)
+    self.frame = Instance.new("Frame", screenGui)
+    self.frame.Size = UDim2.new(0, 300, 1, 0)
+    self.frame.Position = UDim2.new(0.5, -150, 0, 0)
+    self.frame.BackgroundColor3 = Color3.fromRGB(0, 0, 0)
+    
+    -- Make the frame draggable
+    local isDragging = false
+    local dragStart = nil
+
+    self.frame.InputBegan:Connect(function(input)
+        if input.UserInputType == Enum.UserInputType.MouseButton1 then
+            isDragging = true
+            dragStart = input.Position
+        end
+    end)
+
+    game:GetService("UserInputService").InputChanged:Connect(function(input)
+        if isDragging and input.UserInputType == Enum.UserInputType.MouseMovement then
+            local delta = input.Position - dragStart
+            self.frame.Position = UDim2.new(0, self.frame.Position.X.Offset + delta.X, 0, self.frame.Position.Y.Offset + delta.Y)
+            dragStart = input.Position
+        end
+    end)
+
+    game:GetService("UserInputService").InputEnded:Connect(function(input)
+        if input.UserInputType == Enum.UserInputType.MouseButton1 then
+            isDragging = false
+        end
+    end)
+
+    return self
+end
+
+function ShydeHub:UpdateLayout()
+    local yOffset = 10
+    for _, element in ipairs(self.elements) do
+        element.Position = UDim2.new(0, 10, 0, yOffset)
+        yOffset = yOffset + element.AbsoluteSize.Y + 5
+    end
+    self.nextY = yOffset
+end
+
+function ShydeHub:CreateTab(text)
+    local tab = Instance.new("TextButton")
+    tab.Size = UDim2.new(0, 280, 0, 30)
+    tab.Text = text
+    tab.BackgroundColor3 = Color3.fromRGB(255, 255, 255)
+    tab.Parent = self.frame
+    table.insert(self.elements, tab)
+    self:UpdateLayout()
+    return tab
+end
+
+function ShydeHub:CreateToggle(text, currentValue, callback)
+    local toggle = Instance.new("TextButton")
+    toggle.Size = UDim2.new(0, 280, 0, 30)
+    toggle.Text = currentValue and "On" or "Off"
+    toggle.BackgroundColor3 = Color3.fromRGB(255, 255, 255)
+    toggle.Parent = self.frame
+    toggle.MouseButton1Click:Connect(function()
+        currentValue = not currentValue
+        toggle.Text = currentValue and "On" or "Off"
+        callback(currentValue)
+    end)
+    table.insert(self.elements, toggle)
+    self:UpdateLayout()
+    return toggle
+end
+
+function ShydeHub:CreateButton(text, callback)
+    local button = Instance.new("TextButton")
+    button.Size = UDim2.new(0, 280, 0, 30)
+    button.Text = text
+    button.BackgroundColor3 = Color3.fromRGB(255, 255, 255)
+    button.Parent = self.frame
+    button.MouseButton1Click:Connect(callback)
+    table.insert(self.elements, button)
+    self:UpdateLayout()
+    return button
+end
+
+function ShydeHub:CreateSlider(min, max, currentValue, callback)
+    local sliderFrame = Instance.new("Frame")
+    sliderFrame.Size = UDim2.new(0, 280, 0, 30)
+    sliderFrame.BackgroundColor3 = Color3.fromRGB(200, 200, 200)
+    sliderFrame.Parent = self.frame
+
+    local sliderButton = Instance.new("TextButton")
+    sliderButton.Size = UDim2.new(0, 25, 1, 0)
+    sliderButton.Text = ""
+    sliderButton.BackgroundColor3 = Color3.fromRGB(255, 255, 255)
+    sliderButton.Parent = sliderFrame
+
+    local function updateSlider(position)
+        currentValue = math.clamp(min + ((max - min) * ((position.X - sliderFrame.AbsolutePosition.X) / sliderFrame.AbsoluteSize.X)), min, max)
+        sliderButton.Position = UDim2.new(0, position.X - sliderFrame.AbsolutePosition.X, 0, 0)
+        callback(currentValue)
+    end
+
+    sliderButton.MouseButton1Down:Connect(function()
+        local moveConnection
+        moveConnection = game:GetService("UserInputService").InputChanged:Connect(function(input)
+            if input.UserInputType == Enum.UserInputType.MouseMovement then
+                updateSlider(input.Position)
+            end
+        end)
+        
+        local upConnection
+        upConnection = game:GetService("UserInputService").InputEnded:Connect(function(input)
+            if input.UserInputType == Enum.UserInputType.MouseButton1 then
+                moveConnection:Disconnect()
+                upConnection:Disconnect()
+            end
+        end)
+    end)
+
+    table.insert(self.elements, sliderFrame)
+    self:UpdateLayout()
+    updateSlider(UDim2.new(0, currentValue / max * sliderFrame.AbsoluteSize.X, 0, 0).Position)
+    return sliderFrame
+end
+
+function ShydeHub:CreateNotification(text, duration)
+    local notification = Instance.new("TextLabel")
+    notification.Size = UDim2.new(0, 280, 0, 30)
+    notification.Text = text
+    notification.BackgroundColor3 = Color3.fromRGB(50, 50, 50)
+    notification.TextColor3 = Color3.fromRGB(255, 255, 255)
+    notification.Parent = self.frame
+    table.insert(self.elements, notification)
+    self:UpdateLayout()
+
+    game:GetService("Debris"):AddItem(notification, duration)
+    return notification
+end
+
+function ShydeHub:CreateTextbox(placeholderText, currentValue, callback)
+    local textbox = Instance.new("TextBox")
+    textbox.Size = UDim2.new(0, 280, 0, 30)
+    textbox.Text = currentValue
+    textbox.PlaceholderText = placeholderText
+    textbox.BackgroundColor3 = Color3.fromRGB(255, 255, 255)
+    textbox.Parent = self.frame
+    textbox.FocusLost:Connect(function(enterPressed)
+        if enterPressed then
+            callback(textbox.Text)
+        end
+    end)
+    table.insert(self.elements, textbox)
+    self:UpdateLayout()
+    return textbox
+end
+
+local playerGui = game.Players.LocalPlayer:WaitForChild("PlayerGui")
+local screenGui = Instance.new("ScreenGui", playerGui)
+
+local hub = ShydeHub.new(screenGui)
+hub:CreateTab("Tab 1")
+hub:CreateToggle("Toggle Me", true, function(state) print("Toggle state: " .. tostring(state)) end)
+hub:CreateButton("Click Me", function() print("Button clicked") end)
+hub:CreateSlider(0, 100, 50, function(value) print("Slider value: " .. tostring(value)) end)
+hub:CreateNotification("Hello, World!", 5)
+hub:CreateTextbox("Type here...", "Sample text", function(text) print("Textbox input: " .. text) end)
