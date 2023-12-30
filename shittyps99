@@ -98,7 +98,6 @@ function GuiLibrary:addTab(name)
     tab.Name = name
     tab.Text = name
     tab.BackgroundColor3 = Color3.fromRGB(45, 45, 45)
-    tab.TextColor3 = Color3.white
     tab.ZIndex = 2
     self.tabs[name] = tab
 
