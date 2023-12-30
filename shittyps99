@@ -1,9 +1,8 @@
-
 local Players = game:GetService("Players")
 local Workspace = game:GetService("Workspace")
 local RunService = game:GetService("RunService")
 local Client = Players.LocalPlayer
-local Orbs = Workspace["__THINGS"].Orbs
+local Orbs = Workspace:WaitForChild("__THINGS").Orbs
 
 local orbToggle = false;
 
@@ -30,7 +29,6 @@ function ShydeHub.new(screenGui)
     self.window.Position = UDim2.new(0.5, -150, 0.5, -100)  -- Center the frame
     self.window.BackgroundColor3 = Color3.new(0.2, 0.2, 0.2)  -- Light black color
     self.window.BorderSizePixel = 0  -- Remove borders
-    self.window.CornerRadius = UDim.new(0, 10)  -- Rounded corners
 
     -- Add shadow by placing a TextLabel behind the window
     local shadow = Instance.new("TextLabel")
@@ -53,13 +51,6 @@ function ShydeHub.new(screenGui)
     self.closeButton.TextColor3 = Color3.new(1, 1, 1)  -- White text color
     self.closeButton.Font = Enum.Font.SourceSansBold
     self.closeButton.Parent = self.window
-
-    -- Add your other GUI elements (tabs, buttons, etc.) inside the window
-
-    -- Function to close the window when the close button is clicked
-    self.closeButton.MouseButton1Click:Connect(function()
-        self:Destroy()
-    end)
 
     -- Display the window in the specified screenGui
     self.window.Parent = screenGui
@@ -107,7 +98,8 @@ end
 
 -- CreateSlider Function with Callback
 function CreateSlider(tabName, sliderText, callback)
-    local slider = Instance.new("Slider")
+    local slider = Instance.new("TextButton")  -- Replace with the appropriate element for your slider
+    slider.Text = sliderText
     slider.Size = UDim2.new(0, 200, 0, 20)
     slider.Parent = myShydeHub.window
     
@@ -150,17 +142,15 @@ end
 
 -- CreateDropdown Function with Callback
 function CreateDropdown(tabName, options, callback)
-    local dropdown = Instance.new("DropDownMenu")
+    local dropdown = Instance.new("TextLabel")  -- Replace with the appropriate element for your dropdown
+    dropdown.Text = "Select an option"
     dropdown.Size = UDim2.new(0, 150, 0, 30)
     dropdown.Parent = myShydeHub.window
     
     -- Add code to associate with the specified tab, set options, and implement dropdown behavior
-    dropdown:SetOptions(options)
-    dropdown.OptionSelected:Connect(function(selectedOption)
-        -- Call the provided callback function when an option is selected
-        if callback then
-            callback(tabName, selectedOption)
-        end
+    dropdown.MouseButton1Click:Connect(function()
+        -- Implement dropdown behavior here
+        print("Dropdown in Tab '" .. tabName .. "' clicked!")
     end)
 end
 
@@ -176,4 +166,3 @@ end)
 CreateDropdown("Tab 1", {"Option 1", "Option 2", "Option 3"}, function(tabName, selectedOption)
     print("Selected option in Tab '" .. tabName .. "': " .. selectedOption)
 end)
-
