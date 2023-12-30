@@ -91,33 +91,32 @@ function GuiLibrary.createTab(window, tabName)
 
     local tab = Instance.new("TextButton", tabFrame)
     tab.Name = tabName
-    tab.BackgroundColor3 = Color3.fromRGB(45, 45, 45)
-    tab.Size = UDim2.new(0, 100, 0, 24) -- Small width for the tab
+    tab.BackgroundColor3 = Color3.fromRGB(45, 45, 45)  -- Dark color for tabs
+    tab.Size = UDim2.new(0, 100, 1, 0)  -- Small, fixed width for the tab buttons
     tab.ZIndex = 3
     tab.TextColor3 = Color3.fromRGB(255, 255, 255)
     tab.Font = Enum.Font.SourceSans
     tab.TextSize = 18
     tab.Text = tabName
 
-    -- Auto-sorting for tabs
+    -- The autoSort function will arrange the tabs horizontally within the TabFrame
     local function autoSort()
         local xPos = 0
-        for _, element in ipairs(tabFrame:GetChildren()) do
-            if element:IsA("TextButton") and element.Name ~= "CloseButton" then -- Make sure we do not move the CloseButton if present
+        for i, element in ipairs(tabFrame:GetChildren()) do
+            if element:IsA("TextButton") then
+                -- Update each tab's size to be a small rectangle if they are not
+                element.Size = UDim2.new(0, 100, 0, 24)
                 element.Position = UDim2.new(0, xPos, 0, 0)
-                xPos = xPos + element.Size.X.Offset + 2 -- Adjust spacing between tabs if needed
+                xPos = xPos + element.AbsoluteSize.X + 2  -- Place the next tab right next to the current one
             end
         end
     end
 
-    tab.MouseButton1Click:Connect(function()
-        -- Here you can add code to handle the tab being selected, e.g., show/hide frames associated with each tab
-    end)
-
+    -- Connect the autoSort function to the ChildAdded and ChildRemoved events of the TabFrame
     tabFrame.ChildAdded:Connect(autoSort)
     tabFrame.ChildRemoved:Connect(autoSort)
 
-    autoSort() -- Sort tabs when a new tab is created
+    autoSort()  -- Initial sort of the tabs
 
     return tab
 end
@@ -140,27 +139,6 @@ function GuiLibrary.createButton(tab, name, callback)
 
     return button
 end
-
--- Function to create a Button within a Tab
-function GuiLibrary.createButton(tab, name, callback)
-    local button = Instance.new("TextButton")
-    button.Name = name
-    button.Parent = tab
-    button.Text = name
-    button.Size = UDim2.new(0, 200, 0, 50) -- Size of button as a perpendicular rectangle
-    button.Position = UDim2.new(0.5, -100, 0, 0) -- Centered within the tab
-    button.AnchorPoint = Vector2.new(0.5, 0) -- Anchor point set to center the button
-    button.BackgroundColor3 = Color3.fromRGB(25, 25, 25)
-    button.TextColor3 = Color3.fromRGB(255, 255, 255)
-    button.Font = Enum.Font.SourceSans
-    button.TextSize = 18
-    button.ZIndex = 2
-
-    button.MouseButton1Click:Connect(callback)
-
-    return button
-end
-
 
 -- Create the main GUI container
 local screenGui = GuiLibrary.createScreenGui()
