@@ -97,7 +97,6 @@ function GuiLibrary:addTab(name)
     local tab = Instance.new("TextButton", self.window)
     tab.Name = name
     tab.Text = name
-    tab.Size = UDim2.new(0, 100, 0, 24)
     tab.BackgroundColor3 = Color3.fromRGB(45, 45, 45)
     tab.TextColor3 = Color3.white
     tab.ZIndex = 2
@@ -107,13 +106,19 @@ function GuiLibrary:addTab(name)
     self:autoSortTabs()
 end
 
--- Method to auto-sort tabs
+-- Method to auto-sort tabs and adjust the frame size
 function GuiLibrary:autoSortTabs()
     local xPos = 0
+    local totalWidth = 0  -- To calculate the total width of all tabs
+
     for _, tab in pairs(self.tabs) do
         tab.Position = UDim2.new(0, xPos, 0, self.titleBar.Size.Y.Offset)
         xPos = xPos + tab.Size.X.Offset
+        totalWidth = totalWidth + tab.Size.X.Offset
     end
+
+    -- Update the frame's size to fit all tabs
+    self.window.Size = UDim2.new(0, totalWidth, 0, 300)  -- Adjust the height as needed
 end
 
 -- Method to add buttons to tabs
