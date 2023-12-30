@@ -1,3 +1,4 @@
+
 local Players = game:GetService("Players")
 local Workspace = game:GetService("Workspace")
 local RunService = game:GetService("RunService")
@@ -20,240 +21,159 @@ local ShydeHub = {}
 ShydeHub.__index = ShydeHub
 
 function ShydeHub.new(screenGui)
-    local self = setmetatable({screenGui = screenGui, elements = {}, nextY = 0, currentTab = 1}, ShydeHub)
-    self.frame = Instance.new("Frame", screenGui)
-    self.frame.Size = UDim2.new(0, 300, 0, 350)
-    self.frame.Position = UDim2.new(0.5, -150, 0, 0)
-    self.frame.BackgroundColor3 = Color3.fromRGB(255, 255, 255)
-    self.frame.BorderSizePixel = 0 -- Remove the frame border
+    local self = setmetatable({}, ShydeHub)
+    
+    -- Create the main window frame
+    self.window = Instance.new("Frame")
+    self.window.Name = "ShydeHub"
+    self.window.Size = UDim2.new(0, 300, 0, 200)  -- Adjust dimensions as needed
+    self.window.Position = UDim2.new(0.5, -150, 0.5, -100)  -- Center the frame
+    self.window.BackgroundColor3 = Color3.new(0.2, 0.2, 0.2)  -- Light black color
+    self.window.BorderSizePixel = 0  -- Remove borders
+    self.window.CornerRadius = UDim.new(0, 10)  -- Rounded corners
 
-    -- Add shadow effect to the frame
-    local shadow = Instance.new("ImageLabel")
-    shadow.Size = UDim2.new(1, 12, 1, 12)
-    shadow.Position = UDim2.new(0, -6, 0, -6)
-    shadow.BackgroundTransparency = 1
-    shadow.Image = "rbxassetid://1316045217" -- Shadow image asset ID
-    shadow.ImageColor3 = Color3.new(0, 0, 0)
-    shadow.ImageTransparency = 0.6
-    shadow.Parent = self.frame
+    -- Add shadow by placing a TextLabel behind the window
+    local shadow = Instance.new("TextLabel")
+    shadow.Size = UDim2.new(1, 0, 1, 0)
+    shadow.BackgroundColor3 = Color3.new(0, 0, 0)  -- Dark color for shadow
+    shadow.BackgroundTransparency = 0.3  -- Adjust transparency as needed
+    shadow.BorderSizePixel = 0
+    shadow.Position = UDim2.new(0, 5, 0, 5)  -- Offset for the shadow
+    shadow.Parent = self.window
+    shadow.ZIndex = 0  -- Place the shadow behind the main frame
 
-    -- Make the frame draggable
-    local isDragging = false
-    local dragStart = nil
+    -- Create a close button
+    self.closeButton = Instance.new("TextButton")
+    self.closeButton.Size = UDim2.new(0, 20, 0, 20)
+    self.closeButton.Position = UDim2.new(1, -25, 0, 5)
+    self.closeButton.BackgroundColor3 = Color3.new(1, 0, 0)  -- Red color for the button
+    self.closeButton.BorderSizePixel = 0  -- Remove borders
+    self.closeButton.Text = "X"
+    self.closeButton.TextSize = 14
+    self.closeButton.TextColor3 = Color3.new(1, 1, 1)  -- White text color
+    self.closeButton.Font = Enum.Font.SourceSansBold
+    self.closeButton.Parent = self.window
 
-    self.frame.InputBegan:Connect(function(input)
-        if input.UserInputType == Enum.UserInputType.MouseButton1 then
-            isDragging = true
-            dragStart = input.Position
-        end
+    -- Add your other GUI elements (tabs, buttons, etc.) inside the window
+
+    -- Function to close the window when the close button is clicked
+    self.closeButton.MouseButton1Click:Connect(function()
+        self:Destroy()
     end)
 
-    game:GetService("UserInputService").InputChanged:Connect(function(input)
-        if isDragging and input.UserInputType == Enum.UserInputType.MouseMovement then
-            local delta = input.Position - dragStart
-            self.frame.Position = UDim2.new(0, self.frame.Position.X.Offset + delta.X, 0, self.frame.Position.Y.Offset + delta.Y)
-            dragStart = input.Position
-        end
-    end)
-
-    game:GetService("UserInputService").InputEnded:Connect(function(input)
-        if input.UserInputType == Enum.UserInputType.MouseButton1 then
-            isDragging = false
-        end
-    end)
+    -- Display the window in the specified screenGui
+    self.window.Parent = screenGui
 
     return self
 end
 
-function ShydeHub:UpdateLayout()
-    local yOffset = 45
-    for i, element in ipairs(self.elements) do
-        element.Frame.Position = UDim2.new(0, (i - 1) * 85, 0, yOffset)
-        element.Frame.Visible = i == self.currentTab
-    end
+function ShydeHub:Destroy()
+    self.window:Destroy()
 end
 
-function ShydeHub:CreateTab(text)
+-- Example usage:
+local screenGui = game.Players.LocalPlayer:WaitForChild("PlayerGui")
+local myShydeHub = ShydeHub.new(screenGui)
+
+-- CreateTab Function
+function CreateTab(tabName)
     local tabButton = Instance.new("TextButton")
-    tabButton.Size = UDim2.new(0, 80, 0, 30)
-    tabButton.Text = text
-    tabButton.BackgroundColor3 = Color3.fromRGB(200, 200, 200)
-    tabButton.TextColor3 = Color3.fromRGB(0, 0, 0)
-    tabButton.FontWeight = Enum.FontWeight.Bold
-    tabButton.Parent = self.frame
-
-    local tabFrame = Instance.new("Frame")
-    tabFrame.Size = UDim2.new(1, 0, 1, -30)
-    tabFrame.Position = UDim2.new(0, 0, 0, 30)
-    tabFrame.BackgroundColor3 = Color3.fromRGB(255, 255, 255)
-    tabFrame.Visible = false
-    tabFrame.Parent = self.frame
-
-    -- Add shadow effect to the tab frame
-    local tabShadow = Instance.new("ImageLabel")
-    tabShadow.Size = UDim2.new(1, 12, 1, 12)
-    tabShadow.Position = UDim2.new(0, -6, 0, -6)
-    tabShadow.BackgroundTransparency = 1
-    tabShadow.Image = "rbxassetid://1316045217" -- Shadow image asset ID
-    tabShadow.ImageColor3 = Color3.new(0, 0, 0)
-    tabShadow.ImageTransparency = 0.6
-    tabShadow.Parent = tabFrame
-
-    table.insert(self.elements, {Button = tabButton, Frame = tabFrame})
-
+    tabButton.Text = tabName
+    tabButton.Size = UDim2.new(0, 100, 0, 30)
+    tabButton.Parent = myShydeHub.window
+    
+    -- Add code to change the content when the tab button is clicked
     tabButton.MouseButton1Click:Connect(function()
-        self.currentTab = #self.elements
-        self:UpdateLayout()
+        -- Implement tab content change here
+        print("Tab '" .. tabName .. "' clicked!")
     end)
-
-    self:UpdateLayout()
-    return tabFrame
 end
 
--- Modify other create functions to include a "tab" parameter and use it to specify which tab they belong to
-function ShydeHub:CreateToggle(tab, text, currentValue, callback)
-    local toggle = Instance.new("TextButton")
-    toggle.Size = UDim2.new(0, 280, 0, 30)
-    toggle.Text = currentValue and "On" or "Off"
-    toggle.BackgroundColor3 = Color3.fromRGB(150, 150, 150)
-    toggle.TextColor3 = Color3.fromRGB(0, 0, 0)
-    toggle.Parent = tab
-    toggle.MouseButton1Click:Connect(function()
-        currentValue = not currentValue
-        toggle.Text = currentValue and "On" or "Off"
-        callback(currentValue)
-    end)
-    self:UpdateLayout()
-    return toggle
-end
-
-function ShydeHub:CreateButton(tab, text, callback)
-    local button = Instance.new("TextButton")
-    button.Size = UDim2.new(0, 280, 0, 30)
-    button.Text = text
-    button.BackgroundColor3 = Color3.fromRGB(150, 150, 150)
-    button.TextColor3 = Color3.fromRGB(0, 0, 0)
-    button.FontWeight = Enum.FontWeight.Bold
-    button.Parent = tab
-    button.MouseButton1Click:Connect(callback)
-    self:UpdateLayout()
-    return button
-end
-
-function ShydeHub:CreateSlider(tab, min, max, currentValue, callback)
-    local sliderFrame = Instance.new("Frame")
-    sliderFrame.Size = UDim2.new(0, 280, 0, 30)
-    sliderFrame.BackgroundColor3 = Color3.fromRGB(150, 150, 150)
-    sliderFrame.Parent = tab
-
-    local sliderButton = Instance.new("TextButton")
-    sliderButton.Size = UDim2.new(0, 25, 1, 0)
-    sliderButton.Text = ""
-    sliderButton.BackgroundColor3 = Color3.fromRGB(0, 0, 0)
-    sliderButton.Parent = sliderFrame
-
-    local function updateSlider(position)
-        currentValue = math.clamp(min + ((max - min) * ((position.X - sliderFrame.AbsolutePosition.X) / sliderFrame.AbsoluteSize.X)), min, max)
-        sliderButton.Position = UDim2.new(0, position.X - sliderFrame.AbsolutePosition.X, 0, 0)
-        callback(currentValue)
-    end
-
-    sliderButton.MouseButton1Down:Connect(function()
-        local moveConnection
-        moveConnection = game:GetService("UserInputService").InputChanged:Connect(function(input)
-            if input.UserInputType == Enum.UserInputType.MouseMovement then
-                updateSlider(input.Position)
-            end
-        end)
-
-        local upConnection
-        upConnection = game:GetService("UserInputService").InputEnded:Connect(function(input)
-            if input.UserInputType == Enum.UserInputType.MouseButton1 then
-                moveConnection:Disconnect()
-                upConnection:Disconnect()
-            end
-        end)
-    end)
-
-    self:UpdateLayout()
-    updateSlider(UDim2.new(0, currentValue / max * sliderFrame.AbsoluteSize.X, 0, 0).Position)
-    return sliderFrame
-end
-
-function ShydeHub:CreateNotification(tab, text, duration)
-    local notification = Instance.new("TextLabel")
-    notification.Size = UDim2.new(0, 280, 0, 30)
-    notification.Text = text
-    notification.BackgroundColor3 = Color3.fromRGB(50, 50, 50)
-    notification.TextColor3 = Color3.fromRGB(255, 255, 255)
-    notification.Parent = tab
-    self:UpdateLayout()
-
-    game:GetService("Debris"):AddItem(notification, duration)
-    return notification
-end
-
-function ShydeHub:CreateTextbox(tab, placeholderText, currentValue, callback)
-    local textbox = Instance.new("TextBox")
-    textbox.Size = UDim2.new(0, 280, 0, 30)
-    textbox.Text = currentValue
-    textbox.PlaceholderText = placeholderText
-    textbox.BackgroundColor3 = Color3.fromRGB(255, 255, 255)
-    textbox.Parent = tab
-    textbox.FocusLost:Connect(function(enterPressed)
-        if enterPressed then
-            callback(textbox.Text)
+-- CreateToggle Function with Callback
+function CreateToggle(tabName, toggleText, callback)
+    local toggleButton = Instance.new("TextButton")
+    toggleButton.Text = toggleText
+    toggleButton.Size = UDim2.new(0, 150, 0, 30)
+    toggleButton.Parent = myShydeHub.window
+    
+    -- Add code to associate with the specified tab and implement toggle behavior
+    toggleButton.MouseButton1Click:Connect(function()
+        -- Call the provided callback function when the toggle is clicked
+        if callback then
+            callback(tabName, toggleText)
         end
     end)
-    self:UpdateLayout()
-    return textbox
 end
 
--- Create a ScreenGui to host the interface
-local screenGui = Instance.new("ScreenGui")
-screenGui.Parent = game.Players.LocalPlayer.PlayerGui
+-- CreateSlider Function with Callback
+function CreateSlider(tabName, sliderText, callback)
+    local slider = Instance.new("Slider")
+    slider.Size = UDim2.new(0, 200, 0, 20)
+    slider.Parent = myShydeHub.window
+    
+    -- Add code to associate with the specified tab and implement slider behavior
+    slider.MouseButton1Click:Connect(function()
+        -- Call the provided callback function when the slider is clicked
+        if callback then
+            callback(tabName, sliderText)
+        end
+    end)
+end
 
--- Create a ShydeHub instance
-local hub = ShydeHub.new(screenGui)
+-- CreateNotification Function
+function CreateNotification(tabName, notificationText)
+    local notificationLabel = Instance.new("TextLabel")
+    notificationLabel.Text = notificationText
+    notificationLabel.Size = UDim2.new(0, 150, 0, 20)
+    notificationLabel.Parent = myShydeHub.window
+    
+    -- Add code to associate with the specified tab and implement notification behavior
+    notificationLabel.MouseButton1Click:Connect(function()
+        -- Implement notification behavior here
+        print("Notification '" .. notificationText .. "' in Tab '" .. tabName .. "' clicked!")
+    end)
+end
 
--- Create tabs
-local tab1 = hub:CreateTab("Tab 1")
-local tab2 = hub:CreateTab("Tab 2")
+-- CreateTextBox Function
+function CreateTextBox(tabName, placeholderText)
+    local textBox = Instance.new("TextBox")
+    textBox.PlaceholderText = placeholderText
+    textBox.Size = UDim2.new(0, 150, 0, 30)
+    textBox.Parent = myShydeHub.window
+    
+    -- Add code to associate with the specified tab and implement textbox behavior
+    textBox.FocusLost:Connect(function()
+        -- Implement textbox behavior here
+        print("Text entered in Tab '" .. tabName .. "': " .. textBox.Text)
+    end)
+end
 
--- Add elements to Tab 1
-hub:CreateToggle(tab1, "Toggle 1", false, function(value)
-    print("Toggle 1 value: " .. tostring(value))
+-- CreateDropdown Function with Callback
+function CreateDropdown(tabName, options, callback)
+    local dropdown = Instance.new("DropDownMenu")
+    dropdown.Size = UDim2.new(0, 150, 0, 30)
+    dropdown.Parent = myShydeHub.window
+    
+    -- Add code to associate with the specified tab, set options, and implement dropdown behavior
+    dropdown:SetOptions(options)
+    dropdown.OptionSelected:Connect(function(selectedOption)
+        -- Call the provided callback function when an option is selected
+        if callback then
+            callback(tabName, selectedOption)
+        end
+    end)
+end
+
+-- Example usage with callbacks for Toggle, Dropdown, and Slider:
+CreateToggle("Tab 1", "Toggle 1", function(tabName, toggleText)
+    print("Toggle '" .. toggleText .. "' in Tab '" .. tabName .. "' clicked!")
 end)
 
-hub:CreateButton(tab1, "Button 1", function()
-    print("Button 1 clicked")
+CreateSlider("Tab 1", "Slider 1", function(tabName, sliderText)
+    print("Slider for '" .. sliderText .. "' in Tab '" .. tabName .. "' clicked!")
 end)
 
-hub:CreateSlider(tab1, 0, 100, 50, function(value)
-    print("Slider 1 value: " .. tostring(value))
+CreateDropdown("Tab 1", {"Option 1", "Option 2", "Option 3"}, function(tabName, selectedOption)
+    print("Selected option in Tab '" .. tabName .. "': " .. selectedOption)
 end)
 
-hub:CreateNotification(tab1, "Notification 1", 5)
-
-hub:CreateTextbox(tab1, "Enter text", "Default Text", function(text)
-    print("Textbox 1 text: " .. text)
-end)
-
--- Add elements to Tab 2
-hub:CreateToggle(tab2, "Toggle 2", true, function(value)
-    print("Toggle 2 value: " .. tostring(value))
-end)
-
-hub:CreateButton(tab2, "Button 2", function()
-    print("Button 2 clicked")
-end)
-
-hub:CreateSlider(tab2, 0, 1, 0.5, function(value)
-    print("Slider 2 value: " .. tostring(value))
-end)
-
-hub:CreateNotification(tab2, "Notification 2", 3)
-
-hub:CreateTextbox(tab2, "Enter text", "Hello, World!", function(text)
-    print("Textbox 2 text: " .. text)
-end)
