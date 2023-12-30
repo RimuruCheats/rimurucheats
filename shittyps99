@@ -1,159 +1,171 @@
 local GuiLibrary = {}
+GuiLibrary.__index = GuiLibrary
 
--- Function to make frames draggable
-function GuiLibrary.makeDraggable(frame, window)
+-- Function to create a 'manual' shadow effect
+local function createShadow(parent)
+    local shadowSize = 6  -- Determines how far the shadow extends
+    local transparencyStep = 0.2  -- Determines shadow opacity
+    for i = 1, shadowSize do
+        local shadow = Instance.new("Frame", parent)
+        shadow.Name = "Shadow" .. i
+        shadow.BackgroundColor3 = Color3.new(0, 0, 0)
+        shadow.BorderSizePixel = 0
+        shadow.ZIndex = parent.ZIndex - 1
+        shadow.Size = UDim2.new(1, shadowSize*2, 1, shadowSize*2)
+        shadow.Position = UDim2.new(0, -shadowSize, 0, -shadowSize)
+        shadow.BackgroundTransparency = 1 - (i * transparencyStep / shadowSize)
+        shadow.Visible = true
+    end
+end
+
+-- Function to make a UI element draggable
+local function makeDraggable(uiElement, dragFunction)
     local dragging = false
-    local dragStart = nil
-    local startPos = nil
+    local dragStart, startPos
 
-    local function onDragStart(input)
+    uiElement.InputBegan:Connect(function(input)
         if input.UserInputType == Enum.UserInputType.MouseButton1 then
             dragging = true
             dragStart = input.Position
-            startPos = window.Position
-
-            input.Changed:Connect(function()
-                if input.UserInputState == Enum.UserInputState.End then
-                    dragging = false
-                end
-            end)
+            startPos = uiElement.Position
         end
+    end)
+
+    uiElement.InputChanged:Connect(function(input)
+        if input.UserInputType == Enum.UserInputType.MouseMovement and dragging then
+            dragFunction(startPos, dragStart, input.Position)
+        end
+    end)
+
+    uiElement.InputEnded:Connect(function(input)
+        if input.UserInputType == Enum.UserInputType.MouseButton1 then
+            dragging = false
+        end
+    end)
+end
+
+-- Primary constructor for the GUI window
+function GuiLibrary.new(screenGui, title)
+    -- If an existing GUI is present, close it
+    if screenGui:FindFirstChild("GuiLibraryWindow") then
+        screenGui:FindFirstChild("GuiLibraryWindow"):Destroy()
     end
 
-    local function onDragInput(input)
-        if input.UserInputType == Enum.UserInputType.MouseMovement then
-            if dragging then
-                local delta = input.Position - dragStart
-                window.Position = UDim2.new(startPos.X.Scale, startPos.X.Offset + delta.X, startPos.Y.Scale, startPos.Y.Offset + delta.Y)
-            end
-        end
+    local self = setmetatable({}, GuiLibrary)
+
+    -- Main GUI window frame
+    self.window = Instance.new("Frame")
+    self.window.Name = "GuiLibraryWindow"
+    self.window.Parent = screenGui
+    self.window.Size = UDim2.new(0, 300, 0, 300)
+    self.window.Position = UDim2.new(0.5, -150, 0.5, -150)
+    self.window.BackgroundColor3 = Color3.fromRGB(30, 30, 30)
+    self.window.BorderSizePixel = 0
+    self.window.ZIndex = 1
+
+    -- Title bar
+    self.titleBar = Instance.new("TextLabel", self.window)
+    self.titleBar.Size = UDim2.new(1, 0, 0, 24)
+    self.titleBar.BackgroundColor3 = Color3.fromRGB(25, 25, 25)
+    self.titleBar.Text = title
+    self.titleBar.TextColor3 = Color3.white
+    self.titleBar.ZIndex = 2
+    self.titleBar.BorderSizePixel = 0
+
+    -- Make the title bar draggable
+    makeDraggable(self.titleBar, function(startPos, dragStart, currentPos)
+        local delta = currentPos - dragStart
+        self.window.Position = UDim2.new(startPos.X.Scale, startPos.X.Offset + delta.X, startPos.Y.Scale, startPos.Y.Offset + delta.Y)
+    end)
+
+    -- Shadow effect
+    createShadow(self.window)
+
+    -- Store tabs and buttons
+    self.tabs = {}
+    self.buttons = {}
+
+    return self
+end
+
+-- Method to add tabs to the GUI
+function GuiLibrary:addTab(name)
+    local tab = Instance.new("TextButton", self.window)
+    tab.Name = name
+    tab.Text = name
+    tab.Size = UDim2.new(0, 100, 0, 24)
+    tab.BackgroundColor3 = Color3.fromRGB(45, 45, 45)
+    tab.TextColor3 = Color3.white
+    tab.ZIndex = 2
+    self.tabs[name] = tab
+
+    -- Auto-sort tabs
+    self:autoSortTabs()
+end
+
+-- Method to auto-sort tabs
+function GuiLibrary:autoSortTabs()
+    local xPos = 0
+    for _, tab in pairs(self.tabs) do
+        tab.Position = UDim2.new(0, xPos, 0, self.titleBar.Size.Y.Offset)
+        xPos = xPos + tab.Size.X.Offset
+    end
+end
+
+-- Method to add buttons to tabs
+function GuiLibrary:addButton(tabName, buttonText, callback)
+    local tab = self.tabs[tabName]
+    if not tab then
+        warn("Tab not found:", tabName)
+        return
     end
 
-    frame.InputBegan:Connect(onDragStart)
-    frame.InputChanged:Connect(onDragInput)
-end
-
--- Function to create a ScreenGui
-function GuiLibrary.createScreenGui()
-    local screenGui = Instance.new("ScreenGui")
-    screenGui.Parent = game.Players.LocalPlayer:WaitForChild("PlayerGui")
-    return screenGui
-end
-
--- Function to create a Window
-function GuiLibrary.createWindow(parent)
-    local window = Instance.new("Frame", parent)
-    window.Name = "Window"
-    window.BackgroundColor3 = Color3.fromRGB(44, 44, 44)
-    window.BorderSizePixel = 0
-    window.Size = UDim2.new(0, 300, 0, 250)
-    window.Position = UDim2.new(0.5, -150, 0.5, -125)
-    window.ZIndex = 2
-
-    -- Title Frame
-    local titleFrame = Instance.new("Frame", window)
-    titleFrame.Name = "TitleFrame"
-    titleFrame.BackgroundColor3 = Color3.fromRGB(35, 35, 35)
-    titleFrame.Size = UDim2.new(1, 0, 0, 24)
-    titleFrame.ZIndex = 2
-
-    -- Title Label
-    local title = Instance.new("TextLabel", titleFrame)
-    title.Name = "Title"
-    title.BackgroundTransparency = 1
-    title.Size = UDim2.new(1, 0, 1, 0)
-    title.Font = Enum.Font.GothamBold
-    title.Text = "Minty Hub"
-    title.TextColor3 = Color3.fromRGB(255, 255, 255)
-    title.TextSize = 18
-    title.ZIndex = 3
-
-    -- Make the entire window draggable
-    GuiLibrary.makeDraggable(titleFrame, window)
-
-    -- Tab Frame
-    local tabFrame = Instance.new("Frame", window)
-    tabFrame.Name = "TabFrame"
-    tabFrame.BackgroundColor3 = Color3.fromRGB(55, 55, 55)
-    tabFrame.BorderSizePixel = 0
-    tabFrame.Size = UDim2.new(1, 0, 0, 50) -- Adjust the height as needed
-    tabFrame.Position = UDim2.new(0, 0, 0, titleFrame.Size.Y.Offset)
-    tabFrame.ZIndex = 2
-
-    window.TabFrame = tabFrame
-
-    return window
-end
-
--- Function to create a Tab inside the TabFrame
-function GuiLibrary.createTab(window, tabName)
-    local tabFrame = window.TabFrame
-
-    local tab = Instance.new("TextButton", tabFrame)
-    tab.Name = tabName
-    tab.BackgroundColor3 = Color3.fromRGB(45, 45, 45)  -- Dark color for tabs
-    tab.Size = UDim2.new(0, 100, 1, 0)  -- Small, fixed width for the tab buttons
-    tab.ZIndex = 3
-    tab.TextColor3 = Color3.fromRGB(255, 255, 255)
-    tab.Font = Enum.Font.SourceSans
-    tab.TextSize = 18
-    tab.Text = tabName
-
-    -- The autoSort function will arrange the tabs horizontally within the TabFrame
-    local function autoSort()
-        local xPos = 0
-        for i, element in ipairs(tabFrame:GetChildren()) do
-            if element:IsA("TextButton") then
-                -- Update each tab's size to be a small rectangle if they are not
-                element.Size = UDim2.new(0, 100, 0, 24)
-                element.Position = UDim2.new(0, xPos, 0, 0)
-                xPos = xPos + element.AbsoluteSize.X + 2  -- Place the next tab right next to the current one
-            end
-        end
-    end
-
-    -- Connect the autoSort function to the ChildAdded and ChildRemoved events of the TabFrame
-    tabFrame.ChildAdded:Connect(autoSort)
-    tabFrame.ChildRemoved:Connect(autoSort)
-
-    autoSort()  -- Initial sort of the tabs
-
-    return tab
-end
-
--- Function to create a Button within a Tab
-function GuiLibrary.createButton(tab, name, callback)
-    local button = Instance.new("TextButton")
-    button.Name = name
-    button.Parent = tab
-    button.Text = name
-    button.Size = UDim2.new(1, -20, 0, 50) -- Full width inside the tab, with some padding
-    button.Position = UDim2.new(0, 10, 0, 25) -- Positioned below the tab buttons
+    local button = Instance.new("TextButton", tab)
+    button.Name = buttonText
+    button.Text = buttonText
+    button.Size = UDim2.new(0, 200, 0, 50)
+    button.Position = UDim2.new(0.5, -100, 0, 0) -- Centered within the tab
+    button.AnchorPoint = Vector2.new(0.5, 0)
     button.BackgroundColor3 = Color3.fromRGB(25, 25, 25)
-    button.TextColor3 = Color3.fromRGB(255, 255, 255)
-    button.Font = Enum.Font.SourceSans
-    button.TextSize = 18
+    button.TextColor3 = Color3.white
     button.ZIndex = 2
+    button.BorderSizePixel = 0
 
-    button.MouseButton1Click:Connect(callback)
+    if callback then
+        button.MouseButton1Click:Connect(callback)
+    end
 
-    return button
+    self.buttons[buttonText] = button
+
+    -- Auto-sort buttons
+    self:autoSortButtons(tab)
 end
 
--- Create the main GUI container
-local screenGui = GuiLibrary.createScreenGui()
-local window = GuiLibrary.createWindow(screenGui)
+-- Method to auto-sort buttons within a tab
+function GuiLibrary:autoSortButtons(tab)
+    local yPos = 0
+    for _, button in pairs(self.buttons) do
+        if button.Parent == tab then
+            button.Position = UDim2.new(0.5, -button.Size.X.Offset / 2, 0, yPos + 50)
+            yPos = yPos + button.Size.Y.Offset
+        end
+    end
+end
 
--- Create tabs within the window's TabFrame
-local tab1 = GuiLibrary.createTab(window, "Tab1")
-local tab2 = GuiLibrary.createTab(window, "Tab2")
--- You can continue adding tabs as needed
+local ReplicatedStorage = game:GetService("ReplicatedStorage")
+local Players = game:GetService("Players")
 
--- Now, use the `tab1` and `tab2` frames to create buttons within those tabs
-local button1 = GuiLibrary.createButton(tab1, "Button1", function()
-    print("Button1 clicked in Tab1")
-end)
+local player = Players.LocalPlayer
+local playerGui = player:WaitForChild("PlayerGui")
+-- Create a new GUI
+local myGui = GuiLibrary.new(playerGui, "Minty Hub")
 
-local button2 = GuiLibrary.createButton(tab2, "Button2", function()
-    print("Button2 clicked in Tab2")
+-- Add tabs to the GUI
+myGui:addTab("Home")
+myGui:addTab("Settings")
+myGui:addTab("About")
+
+-- Add buttons to a specific tab
+myGui:addButton("Home", "Click Me", function()
+    print("Button clicked!")
 end)
