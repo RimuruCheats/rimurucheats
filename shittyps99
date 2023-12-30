@@ -68,9 +68,13 @@ function GuiLibrary.new(screenGui, title)
     self.titleBar.Size = UDim2.new(1, 0, 0, 24)
     self.titleBar.BackgroundColor3 = Color3.fromRGB(25, 25, 25)
     self.titleBar.Text = title
-    self.titleBar.TextColor3 = Color3.white
     self.titleBar.ZIndex = 2
     self.titleBar.BorderSizePixel = 0
+    
+    -- Check if TextColor3 property is available
+    if self.titleBar:IsA("TextLabel") then
+        self.titleBar.TextColor3 = Color3.new(1, 1, 1)
+    end
 
     -- Make the title bar draggable
     makeDraggable(self.titleBar, function(startPos, dragStart, currentPos)
