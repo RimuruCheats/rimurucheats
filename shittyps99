@@ -20,24 +20,15 @@ RunService.Heartbeat:Connect(collectOrbs) -- Always listening, but action depend
 local ShydeHub = {}
 ShydeHub.__index = ShydeHub
 
+local ShydeHub = {}
+ShydeHub.__index = ShydeHub
+
 function ShydeHub.new(screenGui)
     local self = setmetatable({screenGui = screenGui, elements = {}, nextY = 0, currentTab = 1}, ShydeHub)
     self.frame = Instance.new("Frame", screenGui)
-    self.frame.Size = UDim2.new(0, 300, 0, 300)
+    self.frame.Size = UDim2.new(0, 300, 0, 300) -- Set the size to create a square
     self.frame.Position = UDim2.new(0.5, -150, 0, 0)
     self.frame.BackgroundColor3 = Color3.fromRGB(0, 0, 0)
-
-    -- Create a close button
-    self.closeButton = Instance.new("TextButton")
-    self.closeButton.Size = UDim2.new(0, 30, 0, 30)
-    self.closeButton.Position = UDim2.new(1, -35, 0, 5)
-    self.closeButton.Text = "X"
-    self.closeButton.BackgroundColor3 = Color3.fromRGB(255, 0, 0)
-    self.closeButton.TextColor3 = Color3.fromRGB(255, 255, 255)
-    self.closeButton.Parent = self.frame
-    self.closeButton.MouseButton1Click:Connect(function()
-        self.frame.Parent = nil -- Remove the frame when the close button is clicked
-    end)
 
     return self
 end
