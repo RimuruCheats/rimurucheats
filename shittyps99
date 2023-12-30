@@ -1,64 +1,85 @@
-local CoreGui = game:GetService("CoreGui")
+local GuiLibrary = {}
 
--- Function to create a shadow
-function createShadow(parent)
-    for i = 1, 5 do -- Create 5 frames with decreasing transparency to simulate a shadow
-        local shadowFrame = Instance.new("Frame")
-        shadowFrame.Name = "Shadow" .. i
-        shadowFrame.Parent = parent
-        shadowFrame.BackgroundColor3 = Color3.new(0, 0, 0)
-        shadowFrame.BorderSizePixel = 0
-        shadowFrame.ZIndex = parent.ZIndex - 1
-        shadowFrame.Size = UDim2.new(1, 10, 1, 10)
-        shadowFrame.Position = UDim2.new(0, -5 * i, 0, -5 * i)
-        shadowFrame.BackgroundTransparency = 0.2 + (i * 0.15) -- Increasing transparency
-        shadowFrame.ClipsDescendants = true
-    end
+-- Function to create a ScreenGui
+function GuiLibrary.createScreenGui()
+    local screenGui = Instance.new("ScreenGui")
+    screenGui.Parent = game.Players.LocalPlayer:WaitForChild("PlayerGui")
+    return screenGui
 end
 
--- Function to create a window
-function createWindow()
-    local window = Instance.new("Frame", CoreGui)
-    window.Name = "ShydeHubWindow"
+-- Function to create a Window
+function GuiLibrary.createWindow(parent, titleText)
+    local window = Instance.new("Frame", parent)
+    window.Name = "Window"
     window.BackgroundColor3 = Color3.fromRGB(44, 44, 44)
     window.BorderSizePixel = 0
-    window.Size = UDim2.new(0, 300, 0, 200) -- Keep size the same
-    window.Position = UDim2.new(0.5, -150, 0.5, -100) -- Center on screen
+    window.Size = UDim2.new(0, 300, 0, 200)
+    window.Position = UDim2.new(0.5, -150, 0.5, -100)
     window.ZIndex = 2
 
-    createShadow(window)
-
-    -- Title setup
     local title = Instance.new("TextLabel", window)
     title.Name = "Title"
     title.BackgroundColor3 = Color3.fromRGB(35, 35, 35)
     title.Size = UDim2.new(1, 0, 0, 24)
     title.Font = Enum.Font.GothamBold
-    title.Text = "Shyde Hub"
+    title.Text = titleText
     title.TextColor3 = Color3.fromRGB(255, 255, 255)
     title.TextSize = 18
-    title.ZIndex = 3
-
-    -- Close button
-    local closeButton = Instance.new("TextButton", title)
-    closeButton.Name = "CloseButton"
-    closeButton.Text = "X"
-    closeButton.BackgroundColor3 = Color3.fromRGB(35, 35, 35)
-    closeButton.TextColor3 = Color3.fromRGB(255, 255, 255)
-    closeButton.Size = UDim2.new(0, 24, 1, 0)
-    closeButton.Position = UDim2.new(1, -24, 0, 0)
-    closeButton.Font = Enum.Font.Gotham
-    closeButton.TextSize = 18
-    closeButton.ZIndex = 3
-
-    closeButton.MouseButton1Click:Connect(function()
-        window:Destroy()
-    end)
-
-    -- Autosort elements function remains the same as previous example...
+    title.ZIndex = 2
 
     return window
 end
 
--- Create the windowQ
-local myWindow = createWindow()
+-- Function to create a tab with button creation functionality
+function GuiLibrary.createTab(parent, tabName)
+    local tab = {}
+    tab.frame = Instance.new("Frame", parent)
+    tab.frame.Name = tabName
+    tab.frame.BackgroundColor3 = Color3.fromRGB(55, 55, 55)
+    tab.frame.BorderSizePixel = 0
+    tab.frame.Size = UDim2.new(1, 0, 0, 24)
+    tab.frame.ZIndex = 2
+
+    -- Auto-sorting for buttons
+    local function autoSort()
+        local yPos = 0
+        for _, element in ipairs(tab.frame:GetChildren()) do
+            if element:IsA("TextButton") then
+                element.Position = UDim2.new(0, 0, 0, yPos)
+                yPos = yPos + element.Size.Y.Offset
+            end
+        end
+    end
+
+    -- Function to create a button within the tab
+    function tab.CreateButton(name, callback)
+        local button = Instance.new("TextButton", tab.frame)
+        button.Name = name
+        button.Text = name
+        button.Size = UDim2.new(1, 0, 0, 50)
+        button.BackgroundColor3 = Color3.fromRGB(25, 25, 25)
+        button.TextColor3 = Color3.fromRGB(255, 255, 255)
+        button.Font = Enum.Font.SourceSans
+        button.TextSize = 18
+        button.ZIndex = 2
+
+        button.MouseButton1Click:Connect(callback)
+
+        autoSort() -- Auto sort buttons whenever a new one is added
+        return button
+    end
+
+    return tab
+end
+
+local screenGui = GuiLibrary.createScreenGui()
+local window = GuiLibrary.createWindow(screenGui, "Shyde Hub")
+local tab = GuiLibrary.createTab(window, "ExampleTab")
+
+tab.CreateButton("Button1", function()
+    print("Button1 clicked")
+end)
+
+tab.CreateButton("Button2", function()
+    print("Button2 clicked")
+end)
