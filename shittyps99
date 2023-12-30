@@ -50,12 +50,14 @@ function GuiLibrary.createWindow(parent)
     window.Position = UDim2.new(0.5, -150, 0.5, -125)
     window.ZIndex = 2
 
+    -- Title Frame
     local titleFrame = Instance.new("Frame", window)
     titleFrame.Name = "TitleFrame"
     titleFrame.BackgroundColor3 = Color3.fromRGB(35, 35, 35)
     titleFrame.Size = UDim2.new(1, 0, 0, 24)
     titleFrame.ZIndex = 2
 
+    -- Title Label
     local title = Instance.new("TextLabel", titleFrame)
     title.Name = "Title"
     title.BackgroundTransparency = 1
@@ -69,42 +71,48 @@ function GuiLibrary.createWindow(parent)
     -- Make the entire window draggable
     GuiLibrary.makeDraggable(titleFrame, window)
 
+    -- Tab Frame
     local tabFrame = Instance.new("Frame", window)
     tabFrame.Name = "TabFrame"
-    tabFrame.BackgroundColor3 = Color3.fromRGB(55, 55, 55) -- Tab frame color
+    tabFrame.BackgroundColor3 = Color3.fromRGB(55, 55, 55)
     tabFrame.BorderSizePixel = 0
-    tabFrame.Size = UDim2.new(1, 0, 0, 24) -- Tab frame size
-    tabFrame.Position = UDim2.new(0, 0, 0, titleFrame.Size.Y.Offset) -- Positioned right below the title frame
+    tabFrame.Size = UDim2.new(1, 0, 0, 50) -- Adjust the height as needed
+    tabFrame.Position = UDim2.new(0, 0, 0, titleFrame.Size.Y.Offset)
     tabFrame.ZIndex = 2
 
-    window.TabFrame = tabFrame -- Store a reference to the tab frame for later use
-
+    window.TabFrame = tabFrame
 
     return window
 end
 
+-- Function to create a Tab inside the TabFrame
 function GuiLibrary.createTab(window, tabName)
     local tabFrame = window.TabFrame
 
     local tab = Instance.new("TextButton", tabFrame)
     tab.Name = tabName
-    tab.BackgroundColor3 = Color3.fromRGB(45, 45, 45) -- Tab color
-    tab.Size = UDim2.new(0, 100, 1, 0) -- Size of tabs as small rectangles within the TabFrame
+    tab.BackgroundColor3 = Color3.fromRGB(45, 45, 45)
+    tab.Size = UDim2.new(0, 100, 0, 24) -- Small width for the tab
     tab.ZIndex = 3
     tab.TextColor3 = Color3.fromRGB(255, 255, 255)
     tab.Font = Enum.Font.SourceSans
     tab.TextSize = 18
     tab.Text = tabName
+
     -- Auto-sorting for tabs
     local function autoSort()
         local xPos = 0
         for _, element in ipairs(tabFrame:GetChildren()) do
-            if element:IsA("TextButton") then
+            if element:IsA("TextButton") and element.Name ~= "CloseButton" then -- Make sure we do not move the CloseButton if present
                 element.Position = UDim2.new(0, xPos, 0, 0)
-                xPos = xPos + element.Size.X.Offset + 2 -- Place the next tab right next to the current one, with a 2-pixel gap
+                xPos = xPos + element.Size.X.Offset + 2 -- Adjust spacing between tabs if needed
             end
         end
     end
+
+    tab.MouseButton1Click:Connect(function()
+        -- Here you can add code to handle the tab being selected, e.g., show/hide frames associated with each tab
+    end)
 
     tabFrame.ChildAdded:Connect(autoSort)
     tabFrame.ChildRemoved:Connect(autoSort)
@@ -112,6 +120,25 @@ function GuiLibrary.createTab(window, tabName)
     autoSort() -- Sort tabs when a new tab is created
 
     return tab
+end
+
+-- Function to create a Button within a Tab
+function GuiLibrary.createButton(tab, name, callback)
+    local button = Instance.new("TextButton")
+    button.Name = name
+    button.Parent = tab
+    button.Text = name
+    button.Size = UDim2.new(1, -20, 0, 50) -- Full width inside the tab, with some padding
+    button.Position = UDim2.new(0, 10, 0, 25) -- Positioned below the tab buttons
+    button.BackgroundColor3 = Color3.fromRGB(25, 25, 25)
+    button.TextColor3 = Color3.fromRGB(255, 255, 255)
+    button.Font = Enum.Font.SourceSans
+    button.TextSize = 18
+    button.ZIndex = 2
+
+    button.MouseButton1Click:Connect(callback)
+
+    return button
 end
 
 -- Function to create a Button within a Tab
