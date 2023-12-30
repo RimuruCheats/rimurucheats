@@ -83,6 +83,36 @@ function GuiLibrary.createWindow(parent)
     return window
 end
 
+function GuiLibrary.createTab(window, tabName)
+    local tabFrame = window.TabFrame
+
+    local tab = Instance.new("TextButton", tabFrame)
+    tab.Name = tabName
+    tab.BackgroundColor3 = Color3.fromRGB(45, 45, 45) -- Tab color
+    tab.Size = UDim2.new(0, 100, 1, 0) -- Size of tabs as small rectangles within the TabFrame
+    tab.ZIndex = 3
+    tab.TextColor3 = Color3.fromRGB(255, 255, 255)
+    tab.Font = Enum.Font.SourceSans
+    tab.TextSize = 18
+    tab.Text = tabName
+    -- Auto-sorting for tabs
+    local function autoSort()
+        local xPos = 0
+        for _, element in ipairs(tabFrame:GetChildren()) do
+            if element:IsA("TextButton") then
+                element.Position = UDim2.new(0, xPos, 0, 0)
+                xPos = xPos + element.Size.X.Offset + 2 -- Place the next tab right next to the current one, with a 2-pixel gap
+            end
+        end
+    end
+
+    tabFrame.ChildAdded:Connect(autoSort)
+    tabFrame.ChildRemoved:Connect(autoSort)
+
+    autoSort() -- Sort tabs when a new tab is created
+
+    return tab
+end
 
 -- Function to create a Button within a Tab
 function GuiLibrary.createButton(tab, name, callback)
@@ -107,11 +137,18 @@ end
 
 -- Create the main GUI container
 local screenGui = GuiLibrary.createScreenGui()
-
--- Create the window with the title hardcoded to "Shyde Hub" in the library
 local window = GuiLibrary.createWindow(screenGui)
 
--- Create a button inside the window
-local button = GuiLibrary.createButton(window, "Reset Aimbot System", function()
-    print("Reset Aimbot System button was clicked")
+-- Create tabs within the window's TabFrame
+local tab1 = GuiLibrary.createTab(window, "Tab1")
+local tab2 = GuiLibrary.createTab(window, "Tab2")
+-- You can continue adding tabs as needed
+
+-- Now, use the `tab1` and `tab2` frames to create buttons within those tabs
+local button1 = GuiLibrary.createButton(tab1, "Button1", function()
+    print("Button1 clicked in Tab1")
+end)
+
+local button2 = GuiLibrary.createButton(tab2, "Button2", function()
+    print("Button2 clicked in Tab2")
 end)
