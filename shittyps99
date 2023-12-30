@@ -84,9 +84,9 @@ function ShydeHub:CreateTab(text)
     tabButton.Parent = self.frame
 
     local tabFrame = Instance.new("Frame")
-    tabFrame.Size = UDim2.new(1, 0, 1, -45)
+    tabFrame.Size = UDim2.new(1, 0, 1, -30)
     tabFrame.Position = UDim2.new(0, 0, 0, 0)
-    tabFrame.BackgroundColor3 = Color3.fromRGB(200, 200, 200)
+    tabFrame.BackgroundColor3 = Color3.fromRGB(255, 255, 255)
     tabFrame.Visible = false
     tabFrame.Parent = self.frame
 
