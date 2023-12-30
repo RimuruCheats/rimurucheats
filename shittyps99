@@ -1,7 +1,7 @@
 local GuiLibrary = {}
 
 -- Function to make frames draggable
-function GuiLibrary.makeDraggable(frame)
+function GuiLibrary.makeDraggable(frame, window)
     local dragging = false
     local dragStart = nil
     local startPos = nil
@@ -10,7 +10,7 @@ function GuiLibrary.makeDraggable(frame)
         if input.UserInputType == Enum.UserInputType.MouseButton1 then
             dragging = true
             dragStart = input.Position
-            startPos = frame.Position
+            startPos = window.Position
 
             input.Changed:Connect(function()
                 if input.UserInputState == Enum.UserInputState.End then
@@ -24,7 +24,7 @@ function GuiLibrary.makeDraggable(frame)
         if input.UserInputType == Enum.UserInputType.MouseMovement then
             if dragging then
                 local delta = input.Position - dragStart
-                frame.Position = UDim2.new(startPos.X.Scale, startPos.X.Offset + delta.X, startPos.Y.Scale, startPos.Y.Offset + delta.Y)
+                window.Position = UDim2.new(startPos.X.Scale, startPos.X.Offset + delta.X, startPos.Y.Scale, startPos.Y.Offset + delta.Y)
             end
         end
     end
@@ -44,66 +44,67 @@ end
 function GuiLibrary.createWindow(parent)
     local window = Instance.new("Frame", parent)
     window.Name = "Window"
-    window.BackgroundColor3 = Color3.fromRGB(44, 44, 44) -- Dark background as in the image
+    window.BackgroundColor3 = Color3.fromRGB(44, 44, 44)
     window.BorderSizePixel = 0
-    window.Size = UDim2.new(0, 300, 0, 250) -- Adjusted size to be a bit bigger
-    window.Position = UDim2.new(0.5, -150, 0.5, -125) -- Center on screen
+    window.Size = UDim2.new(0, 300, 0, 250)
+    window.Position = UDim2.new(0.5, -150, 0.5, -125)
     window.ZIndex = 2
 
     local titleFrame = Instance.new("Frame", window)
     titleFrame.Name = "TitleFrame"
-    titleFrame.BackgroundColor3 = Color3.fromRGB(35, 35, 35) -- Title frame background
-    titleFrame.Size = UDim2.new(1, 0, 0, 24) -- Title frame size
+    titleFrame.BackgroundColor3 = Color3.fromRGB(35, 35, 35)
+    titleFrame.Size = UDim2.new(1, 0, 0, 24)
     titleFrame.ZIndex = 2
 
     local title = Instance.new("TextLabel", titleFrame)
     title.Name = "Title"
-    title.BackgroundTransparency = 1 -- Make the title background transparent
+    title.BackgroundTransparency = 1
     title.Size = UDim2.new(1, 0, 1, 0)
     title.Font = Enum.Font.GothamBold
-    title.Text = "Shyde Hub"
+    title.Text = "Minty Hub"
     title.TextColor3 = Color3.fromRGB(255, 255, 255)
     title.TextSize = 18
     title.ZIndex = 3
 
-    -- Make the title frame draggable
-    GuiLibrary.makeDraggable(titleFrame)
+    -- Make the entire window draggable
+    GuiLibrary.makeDraggable(titleFrame, window)
+
+    local tabFrame = Instance.new("Frame", window)
+    tabFrame.Name = "TabFrame"
+    tabFrame.BackgroundColor3 = Color3.fromRGB(55, 55, 55) -- Tab frame color
+    tabFrame.BorderSizePixel = 0
+    tabFrame.Size = UDim2.new(1, 0, 0, 24) -- Tab frame size
+    tabFrame.Position = UDim2.new(0, 0, 0, titleFrame.Size.Y.Offset) -- Positioned right below the title frame
+    tabFrame.ZIndex = 2
+
+    window.TabFrame = tabFrame -- Store a reference to the tab frame for later use
+
 
     return window
 end
 
--- Function to create a Tab Frame
-function GuiLibrary.createTabFrame(parent)
-    local tabFrame = Instance.new("Frame", parent)
-    tabFrame.Name = "TabFrame"
-    tabFrame.BackgroundColor3 = Color3.fromRGB(55, 55, 55) -- Darker background for tabs
-    tabFrame.BorderSizePixel = 0
-    tabFrame.Size = UDim2.new(1, 0, 0, 24) -- Tabs frame size
-    tabFrame.Position = UDim2.new(0, 0, 0, 24) -- Position below the title frame
-    tabFrame.ZIndex = 2
-
-    return tabFrame
-end
-
--- Function to create a Tab with auto-sorting
-function GuiLibrary.createTab(parent, tabName)
-    local tab = {}
-    tab.frame = GuiLibrary.createTabFrame(parent)
-    tab.frame.Name = tabName
+function GuiLibrary.createTab(parentWindow, tabName)
+    local tab = Instance.new("Frame", parentWindow.TabFrame)
+    tab.Name = tabName
+    tab.BackgroundColor3 = Color3.fromRGB(45, 45, 45) -- Tab color
+    tab.Size = UDim2.new(0, 100, 1, 0) -- Tab size, perpendicular rectangle
+    tab.ZIndex = 3
 
     -- Auto-sorting for tabs
     local function autoSort()
         local xPos = 0
-        for _, element in ipairs(parent:GetChildren()) do
-            if element:IsA("Frame") and element.Name == "TabFrame" then
-                element.Position = UDim2.new(0, xPos, 0, 24)
-                xPos = xPos + element.Size.X.Offset
+        for _, element in ipairs(parentWindow.TabFrame:GetChildren()) do
+            if element:IsA("Frame") and element ~= parentWindow.TabFrame then
+                element.Position = UDim2.new(0, xPos, 0, 0)
+                xPos = xPos + element.Size.X.Offset + 2 -- Add spacing between tabs
             end
         end
     end
 
-    parent.ChildAdded:Connect(autoSort)
-    parent.ChildRemoved:Connect(autoSort)
+    tab.Parent.ChildAdded:Connect(autoSort)
+    tab.Parent.ChildRemoved:Connect(autoSort)
+
+    autoSort() -- Run auto-sort once to update positions
 
     return tab
 end
@@ -112,10 +113,12 @@ end
 function GuiLibrary.createButton(tab, name, callback)
     local button = Instance.new("TextButton")
     button.Name = name
-    button.Parent = tab.frame
+    button.Parent = tab
     button.Text = name
-    button.Size = UDim2.new(0, 100, 0, 50) -- Adjusted button size
-    button.BackgroundColor3 = Color3.fromRGB(25, 25, 25) -- Button background
+    button.Size = UDim2.new(0, 200, 0, 50) -- Size of button as a perpendicular rectangle
+    button.Position = UDim2.new(0.5, -button.Size.X.Offset / 2, 0, 50) -- Position the button below the tab
+    button.AnchorPoint = Vector2.new(0.5, 0) -- Anchor point set to center the button
+    button.BackgroundColor3 = Color3.fromRGB(25, 25, 25)
     button.TextColor3 = Color3.fromRGB(255, 255, 255)
     button.Font = Enum.Font.SourceSans
     button.TextSize = 18
@@ -126,15 +129,23 @@ function GuiLibrary.createButton(tab, name, callback)
     return button
 end
 
+
+-- Create the main GUI container
 local screenGui = GuiLibrary.createScreenGui()
 
--- Create the window with the "Shyde Hub" title
+-- Create the window
 local window = GuiLibrary.createWindow(screenGui)
 
--- Create a tab within the window
-local myTab = GuiLibrary.createTab(window, "MainTab")
+-- Create tabs within the window
+local tab1 = GuiLibrary.createTab(window, "Tab1")
+local tab2 = GuiLibrary.createTab(window, "Tab2")
+-- Add more tabs as needed
 
--- Add buttons to the tab
-GuiLibrary.createButton(myTab, "Test System", function()
-    print("test button was clicked")
+-- Add buttons to the tabs
+GuiLibrary.createButton(tab1, "Button1", function()
+    print("Button1 clicked")
+end)
+
+GuiLibrary.createButton(tab2, "Button2", function()
+    print("Button2 clicked")
 end)
