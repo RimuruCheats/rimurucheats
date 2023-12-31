@@ -290,6 +290,7 @@ local function destroyBreakables(targets)
 end
 
 RunService.Heartbeat:Connect(function()
+    if not autofarmClick then return end
     if clickfarmMethod == "Multiple Targets" then
         local breakableObjects = {}
     
