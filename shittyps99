@@ -1,185 +1,239 @@
 local GuiLibrary = {}
 GuiLibrary.__index = GuiLibrary
 
--- Function to create a 'manual' shadow effect
 local function createShadow(parent)
-    local shadowSize = 6  -- Determines how far the shadow extends
-    local transparencyStep = 0.2  -- Determines shadow opacity
+    local shadowSize = 6
+    local transparencyStep = 0.2
     for i = 1, shadowSize do
         local shadow = Instance.new("Frame", parent)
         shadow.Name = "Shadow" .. i
         shadow.BackgroundColor3 = Color3.new(0, 0, 0)
         shadow.BorderSizePixel = 0
         shadow.ZIndex = parent.ZIndex - 1
-        shadow.Size = UDim2.new(1, shadowSize*2, 1, shadowSize*2)
+        shadow.Size = UDim2.new(1, shadowSize * 2, 1, shadowSize * 2)
         shadow.Position = UDim2.new(0, -shadowSize, 0, -shadowSize)
         shadow.BackgroundTransparency = 1 - (i * transparencyStep / shadowSize)
-        shadow.Visible = true
     end
 end
 
--- Function to make a UI element draggable
-local function makeDraggable(uiElement, dragFunction)
-    local dragging = false
-    local dragStart, startPos
+local function makeDraggable(uiElement, frame)
+    local dragging
+    local dragInput
+    local dragStart
+    local startPos
+
+    local function update(input)
+        local delta = input.Position - dragStart
+        frame.Position = UDim2.new(startPos.X.Scale, startPos.X.Offset + delta.X, startPos.Y.Scale, startPos.Y.Offset + delta.Y)
+    end
 
     uiElement.InputBegan:Connect(function(input)
         if input.UserInputType == Enum.UserInputType.MouseButton1 then
             dragging = true
             dragStart = input.Position
-            startPos = uiElement.Position
+            startPos = frame.Position
+
+            input.Changed:Connect(function()
+                if input.UserInputState == Enum.UserInputState.End then
+                    dragging = false
+                end
+            end)
         end
     end)
 
     uiElement.InputChanged:Connect(function(input)
-        if input.UserInputType == Enum.UserInputType.MouseMovement and dragging then
-            dragFunction(startPos, dragStart, input.Position)
+        if input.UserInputType == Enum.UserInputType.MouseMovement then
+            dragInput = input
         end
     end)
 
     uiElement.InputEnded:Connect(function(input)
-        if input.UserInputType == Enum.UserInputType.MouseButton1 then
+        if input == dragInput and dragging then
             dragging = false
+        end
+    end)
+
+    uiElement.Parent.InputChanged:Connect(function(input)
+        if dragging and input == dragInput then
+            update(input)
         end
     end)
 end
 
--- Primary constructor for the GUI window
 function GuiLibrary.new(screenGui, title)
-    -- If an existing GUI is present, close it
+    -- First, make sure any previous window is destroyed
     if screenGui:FindFirstChild("GuiLibraryWindow") then
         screenGui:FindFirstChild("GuiLibraryWindow"):Destroy()
     end
 
+    -- Set up the new window
     local self = setmetatable({}, GuiLibrary)
-
-    -- Main GUI window frame
     self.window = Instance.new("Frame")
     self.window.Name = "GuiLibraryWindow"
     self.window.Parent = screenGui
-    self.window.Size = UDim2.new(0, 300, 0, 300)
-    self.window.Position = UDim2.new(0.5, -150, 0.5, -150)
+    self.window.Size = UDim2.new(0, 400, 0, 300) -- Original size
+    self.window.Position = UDim2.new(0.5, -200, 0.5, -150) -- Center the window
     self.window.BackgroundColor3 = Color3.fromRGB(30, 30, 30)
     self.window.BorderSizePixel = 0
     self.window.ZIndex = 1
+    self.window.Visible = true
 
-    -- Title bar
+    -- Title bar setup
     self.titleBar = Instance.new("TextLabel", self.window)
     self.titleBar.Size = UDim2.new(1, 0, 0, 24)
     self.titleBar.BackgroundColor3 = Color3.fromRGB(25, 25, 25)
-    self.titleBar.Text = title
+    self.titleBar.Text = title or "Window"
     self.titleBar.ZIndex = 2
     self.titleBar.BorderSizePixel = 0
-    
-    -- Check if TextColor3 property is available
-    if self.titleBar:IsA("TextLabel") then
-        self.titleBar.TextColor3 = Color3.new(1, 1, 1)
-    end
+    self.titleBar.TextColor3 = Color3.new(1, 1, 1)
+    self.titleBar.Font = Enum.Font.SourceSansBold
+    self.titleBar.TextScaled = true
 
-    -- Make the title bar draggable
-    makeDraggable(self.titleBar, function(startPos, dragStart, currentPos)
-        local delta = currentPos - dragStart
-        self.window.Position = UDim2.new(startPos.X.Scale, startPos.X.Offset + delta.X, startPos.Y.Scale, startPos.Y.Offset + delta.Y)
-    end)
-
-    -- Shadow effect
+    -- Draggable functionality
+    makeDraggable(self.titleBar, self.window)
     createShadow(self.window)
 
-    -- Store tabs and buttons
+    -- Close button setup
+    local closeButton = Instance.new("TextButton", self.window)
+    closeButton.Size = UDim2.new(0, 24, 0, 24)
+    closeButton.Position = UDim2.new(1, -28, 0, 2)
+    closeButton.BackgroundColor3 = Color3.fromRGB(255, 0, 0)
+    closeButton.Text = "X"
+    closeButton.TextColor3 = Color3.new(1, 1, 1)
+    closeButton.ZIndex = 2
+    closeButton.MouseButton1Click:Connect(function()
+        self.window:Destroy()
+    end)
+
+    -- Initialize tabs and buttons containers
     self.tabs = {}
     self.buttons = {}
 
     return self
 end
 
--- Method to add tabs to the GUI
 function GuiLibrary:addTab(name)
+    -- Validate the tab name
+    assert(name, "Tab name is required")
+
+    -- Create the tab button
     local tab = Instance.new("TextButton", self.window)
     tab.Name = name
-    tab.Text = ""  -- Clear the text of the TextButton
+    tab.Text = name -- Set the text to the name of the tab for visibility
     tab.BackgroundColor3 = Color3.fromRGB(45, 45, 45)
+    tab.Size = UDim2.new(0, 100, 0, 24)
+    tab.ZIndex = 2
+    tab.TextColor3 = Color3.new(1, 1, 1) -- Ensure text is visible
+    tab.Font = Enum.Font.SourceSansBold
+    tab.TextScaled = true
+
+    local numTabs = 0
+    for _ in pairs(self.tabs) do numTabs = numTabs + 1 end
+    local tabWidth = numTabs > 0 and 1 / numTabs or 1
+
+    for _, tab in pairs(self.tabs) do
+        tab.Size = UDim2.new(tabWidth, 0, 0, 24) -- Set tab width relative to the number of tabs
+    end
+    
+    tab.Size = UDim2.new(tabWidth, 0, 0, 24) -- Apply the size to the new tab as well
+
+    -- Save the tab
     self.tabs[name] = tab
 
-    -- Create a TextLabel for the tab and set its properties
-    local textLabel = Instance.new("TextLabel", tab)
-    textLabel.Name = "TextLabel"
-    textLabel.Size = UDim2.new(1, 0, 1, 0)
-    textLabel.Position = UDim2.new(0, 0, 0, 0)
-    textLabel.Text = name
-    textLabel.TextColor3 = Color3.new(1, 1, 1)
-
-    -- Auto-sort tabs
+    -- Adjust tabs and window size
     self:autoSortTabs()
 end
--- Method to auto-sort tabs and adjust the frame size
-function GuiLibrary:autoSortTabs()
-    local xPos = 0
-    local totalWidth = 0  -- To calculate the total width of all tabs
 
+function GuiLibrary:autoSortTabs()
+    -- Calculate the total width based on tabs
+    local totalWidth = 0
+    for _, tab in pairs(self.tabs) do
+        totalWidth = totalWidth + tab.Size.X.Offset
+    end
+    totalWidth = math.max(totalWidth, 400) -- Ensure minimum width
+    self.window.Size = UDim2.new(0, totalWidth, 0, 300)
+
+    -- Update tab positions
+    local xPos = 0
     for _, tab in pairs(self.tabs) do
         tab.Position = UDim2.new(0, xPos, 0, self.titleBar.Size.Y.Offset)
         xPos = xPos + tab.Size.X.Offset
-        totalWidth = totalWidth + tab.Size.X.Offset
     end
-
-    -- Update the frame's size to fit all tabs
-    self.window.Size = UDim2.new(0, totalWidth, 0, 300)  -- Adjust the height as needed
+    local tabSize = 1 / table.getn(self.tabs) -- Calculate size for equal width
+    for index, tab in pairs(self.tabs) do
+        tab.Size = UDim2.new(tabSize, 0, 0, 24) -- Adjust size for each tab
+        tab.Position = UDim2.new(tabSize * (index - 1), 0, 0, self.titleBar.Size.Y.Offset) -- Position each tab accordingly
+    end
 end
 
--- Method to add buttons to tabs
 function GuiLibrary:addButton(tabName, buttonText, callback)
+    -- Validate tab and button names
+    assert(tabName and buttonText, "Tab name and button text are required")
+
+    -- Find the tab
     local tab = self.tabs[tabName]
     if not tab then
         warn("Tab not found:", tabName)
         return
     end
 
+    -- Create the button
     local button = Instance.new("TextButton", tab)
     button.Name = buttonText
     button.Text = buttonText
-    button.Size = UDim2.new(0, 200, 0, 50)
-    button.Position = UDim2.new(0.5, -100, 0, 0) -- Centered within the tab
-    button.AnchorPoint = Vector2.new(0.5, 0)
+    button.Size = UDim2.new(0, 80, 0, 30) -- Adjusted size
     button.BackgroundColor3 = Color3.fromRGB(25, 25, 25)
-    button.TextColor3 = Color3.white
     button.ZIndex = 2
     button.BorderSizePixel = 0
+    button.TextColor3 = Color3.new(1, 1, 1)
+    button.Font = Enum.Font.SourceSansBold
+    button.TextScaled = true
 
+    -- Set callback if provided
     if callback then
         button.MouseButton1Click:Connect(callback)
     end
 
+    local yPos = 24 -- Start below the tabs
+    local numButtons = 0
+    for _ in pairs(self.buttons) do numButtons = numButtons + 1 end
+    local buttonHeight = math.floor((300 - yPos) / (numButtons + 1)) -- Divide the remaining space by the number of buttons
+
+    button.Size = UDim2.new(1, -20, 0, buttonHeight) -- Adjust the button size to fit within the tab
+    button.Position = UDim2.new(0, 10, 0, yPos + (buttonHeight + 5) * numButtons) -- Adjust button position
+    -- Save the button
     self.buttons[buttonText] = button
 
-    -- Auto-sort buttons
+    -- Sort the buttons
     self:autoSortButtons(tab)
 end
 
--- Method to auto-sort buttons within a tab
 function GuiLibrary:autoSortButtons(tab)
-    local yPos = 0
-    for _, button in pairs(self.buttons) do
-        if button.Parent == tab then
-            button.Position = UDim2.new(0.5, -button.Size.X.Offset / 2, 0, yPos + 50)
-            yPos = yPos + button.Size.Y.Offset
+    -- Adjust button sizes and positions to fit aesthetically in the tab
+    local yPos = 24 -- Start below the tabs
+    local buttonHeight = math.floor((300 - yPos) / table.getn(tab:GetChildren())) -- Calculate button height
+
+    for _, button in pairs(tab:GetChildren()) do
+        if button:IsA("TextButton") then
+            button.Size = UDim2.new(1, -20, 0, buttonHeight) -- Adjust button width to tab width
+            button.Position = UDim2.new(0, 10, 0, yPos) -- Position button
+            yPos = yPos + buttonHeight + 5 -- Increment yPos for the next button
         end
     end
 end
 
+-- Example usage
 local ReplicatedStorage = game:GetService("ReplicatedStorage")
 local Players = game:GetService("Players")
 
 local player = Players.LocalPlayer
-local playerGui = player:WaitForChild("PlayerGui")
--- Create a new GUI
-local myGui = GuiLibrary.new(playerGui, "Minty Hub")
+local screenGui = Instance.new("ScreenGui", player.PlayerGui)
+local myGui = GuiLibrary.new(screenGui, "Minty Hub")
 
--- Add tabs to the GUI
-myGui:addTab("Home")
+local homeTab = myGui:addTab("Home")
 myGui:addTab("Settings")
 myGui:addTab("About")
 
--- Add buttons to a specific tab
-myGui:addButton("Home", "Click Me", function()
-    print("Button clicked!")
+myGui:addButton(homeTab, "Click Me", function()
+    print("Button clicked")
 end)
