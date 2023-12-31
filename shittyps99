@@ -252,14 +252,8 @@ local RunService = game:GetService("RunService")
 local player = game.Players.LocalPlayer
 local character = player.Character or player.CharacterAdded:Wait()
 local hrp = character:WaitForChild("HumanoidRootPart")
-
-local function setCharacterCollisions(enable)
-    for _, part in pairs(character:GetDescendants()) do
-        if part:IsA("BasePart") then
-            part.CanCollide = enable
-        end
-    end
-end
+local lastPosition = hrp.Position
+local isStuck = false
 
 local function getNearestOrb()
     local nearestOrb = nil
@@ -280,14 +274,17 @@ local function getNearestOrb()
 end
 
 local function teleportToNearestOrb()
-    if not autoCollectorb then return end
+    if not autoCollectorb or isStuck then return end
 
     local nearestOrb = getNearestOrb()
     if nearestOrb then
-        setCharacterCollisions(false)
         hrp.CFrame = CFrame.new(nearestOrb.Position)
-        wait(0.1)
-        setCharacterCollisions(true)
+        if (lastPosition - hrp.Position).Magnitude < 1 then 
+            isStuck = true
+            wait(0.5)
+            isStuck = false
+        end
+        lastPosition = hrp.Position
     end
 end
 
@@ -295,7 +292,4 @@ RunService.Heartbeat:Connect(teleportToNearestOrb)
 
 myGui:CreateToggle("Auto Farm", "Collect orbs", function(state)
     autoCollectorb = state
-    if not state then
-        setCharacterCollisions(true)
-    end
 end)
