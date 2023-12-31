@@ -252,8 +252,16 @@ local RunService = game:GetService("RunService")
 local player = game.Players.LocalPlayer
 local character = player.Character or player.CharacterAdded:Wait()
 local hrp = character:WaitForChild("HumanoidRootPart")
-local lastPosition = hrp.Position
-local isStuck = false
+local TweenService = game:GetService("TweenService")
+
+
+local function setCharacterCollisions(statua)
+    for _, part in character:GetDescendants() do
+        if part:IsA("BasePart") then
+            part.CanCollide = statua
+        end
+    end
+end
 
 local function getNearestOrb()
     local nearestOrb = nil
@@ -273,18 +281,28 @@ local function getNearestOrb()
     return nearestOrb
 end
 
-local function teleportToNearestOrb()
-    if not autoCollectorb or isStuck then return end
+local function tweenToNearestOrb()
+    if not autoCollectorb then return end
 
     local nearestOrb = getNearestOrb()
     if nearestOrb then
-        hrp.CFrame = CFrame.new(nearestOrb.Position)
-        if (lastPosition - hrp.Position).Magnitude < 1 then 
-            isStuck = true
-            wait(0.5)
-            isStuck = false
-        end
-        lastPosition = hrp.Position
+        setCharacterCollisions(false)
+        
+        local tweenInfo = TweenInfo.new(
+            (hrp.Position - nearestOrb.Position).Magnitude / 50, -- Duration based on distance
+            Enum.EasingStyle.Linear, -- Easing style of the tween (change as needed)
+            Enum.EasingDirection.Out, -- Easing direction of the tween
+            0, -- Number of times to repeat
+            false, -- Should the tween repeat?
+            0 -- Delay time before tween starts
+        )
+        local tweenGoal = {CFrame = CFrame.new(nearestOrb.Position)}
+        local tween = TweenService:Create(hrp, tweenInfo, tweenGoal)
+        
+        tween:Play()
+        tween.Completed:Connect(function()
+            setCharacterCollisions(true)
+        end)
     end
 end
 
@@ -292,4 +310,7 @@ RunService.Heartbeat:Connect(teleportToNearestOrb)
 
 myGui:CreateToggle("Auto Farm", "Collect orbs", function(state)
     autoCollectorb = state
+    if not state then
+        setCharacterCollisions(true)
+    end
 end)
