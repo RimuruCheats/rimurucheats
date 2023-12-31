@@ -304,7 +304,9 @@ local function tweenToNearestOrb()
     end
 end
 
-RunService.Heartbeat:Connect(teleportToNearestOrb)
+RunService.Heartbeat:Connect(function ()
+    tweenToNearestOrb()
+end)
 
 myGui:CreateToggle("Auto Farm", "Collect orbs", function(state)
     autoCollectorb = state
