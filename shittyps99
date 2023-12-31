@@ -281,31 +281,64 @@ local function getNearestOrb()
     return nearestOrb
 end
 
-local function tweenToNearestOrb()
+local function getNearestLootbag()
+    local nearestLootbag = nil
+    local shortestDistance = math.huge
+    local lootbags = game.Workspace.__THINGS.Lootbags:GetChildren()
+
+    for _, lootbag in ipairs(lootbags) do
+        if lootbag:IsA("Model") then
+            local distance = (hrp.Position - lootbag.PrimaryPart.Position).Magnitude
+            if distance < shortestDistance then
+                shortestDistance = distance
+                nearestLootbag = lootbag.PrimaryPart
+            end
+        end
+    end
+
+    return nearestLootbag
+end
+
+local function teleportTo(targetPosition)
     if not autoCollectorb then return end
+
+    setCharacterCollisions(false)
+    local tweenInfo = TweenInfo.new(
+        0.2,
+        Enum.EasingStyle.Linear,
+        Enum.EasingDirection.Out,
+        0,
+        false,
+        0
+    )
+    local tweenGoal = {CFrame = CFrame.new(targetPosition)}
+    local tween = TweenService:Create(hrp, tweenInfo, tweenGoal)
+
+    tween:Play()
+    tween.Completed:Connect(function()
+        setCharacterCollisions(true)
+    end)
+end
+
+local function teleportToNearestLoot()
     local nearestOrb = getNearestOrb()
     if nearestOrb then
-        setCharacterCollisions(false);
-        local tweenInfo = TweenInfo.new(
-            0.2, 
-            Enum.EasingStyle.Linear, 
-            Enum.EasingDirection.Out, 
-            0, 
-            false, 
-            0
-        )
-        local tweenGoal = {CFrame = CFrame.new(nearestOrb.Position)}
-        local tween = TweenService:Create(hrp, tweenInfo, tweenGoal)
-        
-        tween:Play()
-        tween.Completed:Connect(function()
-            setCharacterCollisions(true)
-        end)
+        teleportTo(nearestOrb.Position)
+    end
+end
+
+local function teleportToNearestLootbag()
+    local nearestLootbag = getNearestLootbag()
+    if nearestLootbag then
+        teleportTo(nearestLootbag.Position)
     end
 end
 
 RunService.Heartbeat:Connect(function ()
-    tweenToNearestOrb()
+    if autoCollectorb then
+        teleportToNearestLoot()
+        teleportToNearestLootbag()
+    end
 end)
 
 myGui:CreateToggle("Auto Farm", "Collect orbs", function(state)
