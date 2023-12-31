@@ -61,12 +61,14 @@ local function makeDraggable(uiElement, frame)
 end
 
 function GuiLibrary.new(screenGui, title)
+    -- Ensure no duplicate GUI exists
     if screenGui:FindFirstChild("GuiLibraryWindow") then
         screenGui:FindFirstChild("GuiLibraryWindow"):Destroy()
     end
 
     local self = setmetatable({}, GuiLibrary)
 
+    -- Create main GUI window frame
     self.window = Instance.new("Frame")
     self.window.Name = "GuiLibraryWindow"
     self.window.Parent = screenGui
@@ -77,6 +79,7 @@ function GuiLibrary.new(screenGui, title)
     self.window.ZIndex = 1
     self.window.Visible = true
 
+    -- Create title bar
     self.titleBar = Instance.new("TextLabel", self.window)
     self.titleBar.Size = UDim2.new(1, 0, 0, 24)
     self.titleBar.BackgroundColor3 = Color3.fromRGB(25, 25, 25)
@@ -87,38 +90,45 @@ function GuiLibrary.new(screenGui, title)
     self.titleBar.Font = Enum.Font.SourceSansBold
     self.titleBar.TextScaled = true
 
+    -- Make title bar draggable
     makeDraggable(self.titleBar, self.window)
     createShadow(self.window)
 
+    -- Create close button
     local closeButton = Instance.new("TextButton", self.titleBar)
     closeButton.Size = UDim2.new(0, 24, 0, 24)
-    closeButton.Position = UDim2.new(1, -28, 0, 0)
+    closeButton.Position = UDim2.new(1, -24, 0, 0)
     closeButton.BackgroundColor3 = Color3.fromRGB(255, 0, 0)
     closeButton.Text = "X"
     closeButton.TextColor3 = Color3.new(1, 1, 1)
     closeButton.ZIndex = 2
+    closeButton.BorderSizePixel = 0
+    closeButton.Font = Enum.Font.SourceSans
+    closeButton.TextSize = 14
     closeButton.MouseButton1Click:Connect(function()
         self.window:Destroy()
     end)
 
-    self.tabFrame = Instance.new("Frame", self.window)
-    self.tabFrame.Size = UDim2.new(1, 0, 0, 24)
-    self.tabFrame.Position = UDim2.new(0, 0, 0, self.titleBar.Size.Y.Offset)
-    self.tabFrame.BackgroundColor3 = Color3.fromRGB(20, 20, 20)
-    self.tabFrame.BorderSizePixel = 0
-    self.tabFrame.ZIndex = 1
+    -- Create a separate frame for tabs below the title bar
+    self.tabsFrame = Instance.new("Frame", self.window)
+    self.tabsFrame.Size = UDim2.new(1, 0, 0, 24)
+    self.tabsFrame.Position = UDim2.new(0, 0, 0, self.titleBar.Size.Y.Offset)
+    self.tabsFrame.BackgroundColor3 = Color3.fromRGB(20, 20, 20)
+    self.tabsFrame.BorderSizePixel = 0
+    self.tabsFrame.ZIndex = 2
 
+    -- Create a frame to hold the content for each tab
     self.contentFrame = Instance.new("Frame", self.window)
-    self.contentFrame.Size = UDim2.new(1, 0, 1, -self.tabFrame.Size.Y.Offset - self.titleBar.Size.Y.Offset)
-    self.contentFrame.Position = UDim2.new(0, 0, 0, self.tabFrame.Size.Y.Offset + self.titleBar.Size.Y.Offset)
+    self.contentFrame.Size = UDim2.new(1, 0, 1, -self.titleBar.Size.Y.Offset - self.tabsFrame.Size.Y.Offset)
+    self.contentFrame.Position = UDim2.new(0, 0, 0, self.titleBar.Size.Y.Offset + self.tabsFrame.Size.Y.Offset)
     self.contentFrame.BackgroundColor3 = Color3.fromRGB(30, 30, 30)
     self.contentFrame.BorderSizePixel = 0
     self.contentFrame.ZIndex = 1
-    self.contentFrame.BackgroundTransparency = 1 -- Make it transparent or set a color
+    self.contentFrame.BackgroundTransparency = 1
 
     self.tabs = {}
-    self.buttons = {}
     self.tabContents = {}
+    self.buttons = {}
 
     return self
 end
@@ -148,13 +158,15 @@ function GuiLibrary:addTab(name)
     self.tabContents[name] = content
 
     tab.MouseButton1Click:Connect(function()
-        -- Hide all tab contents
+        -- Hide all contents and show the one for this tab
         for _, cont in pairs(self.tabContents) do
             cont.Visible = false
         end
-        -- Show the clicked tab's content
         content.Visible = true
     end)
+
+    self.tabs[name] = tab
+    self.tabContents[name] = content
 
     self:autoSortTabs()
 end
@@ -162,11 +174,11 @@ end
 function GuiLibrary:autoSortTabs()
     local count = 0
     for _ in pairs(self.tabs) do count = count + 1 end
-
     local tabWidth = 1 / count
-    for i, tab in pairs(self.tabs) do
+    for name, tab in pairs(self.tabs) do
         tab.Size = UDim2.new(tabWidth, -4, 1, 0)
-        tab.Position = UDim2.new(tabWidth * (i-1), 2, 0, 0)
+        tab.Position = UDim2.new((count - 1) * tabWidth, 2, 0, 0)
+        self.tabContents[name].Size = UDim2.new(1, 0, 1, 0)
     end
 end
 
@@ -209,11 +221,7 @@ function GuiLibrary:autoSortButtons(tabContent)
     end
 end
 
-local ReplicatedStorage = game:GetService("ReplicatedStorage")
-local Players = game:GetService("Players")
-
-local player = Players.LocalPlayer
-local screenGui = Instance.new("ScreenGui", player.PlayerGui)
+local screenGui = Instance.new("ScreenGui", game.Players.LocalPlayer.PlayerGui)
 local myGui = GuiLibrary.new(screenGui, "Minty Hub")
 
 myGui:addTab("Home")
@@ -224,7 +232,8 @@ myGui:addButton("Home", "Click Me", function()
     print("Button clicked")
 end)
 
-local firstTabName = next(GuiLibrary.tabs) -- This gets the name of the first added tab
+-- Set the first tab as active (visible)
+local firstTabName = next(myGui.tabs) -- This gets the name of the first added tab
 if firstTabName then
-    GuiLibrary.tabContents[firstTabName].Visible = true
+    myGui.tabContents[firstTabName].Visible = true
 end
