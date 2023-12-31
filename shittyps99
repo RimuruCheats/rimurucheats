@@ -246,11 +246,11 @@ local player = game.Players.LocalPlayer
 local character = player.Character or player.CharacterAdded:Wait()
 local hrp = character:WaitForChild("HumanoidRootPart")
 
-local function getNearestOrb()
+local function getNearestOrb(orbs)
     local nearestOrb = nil
     local shortestDistance = math.huge
 
-    for _, orb in ipairs(game.Workspace.__THINGS.Orbs:GetChildren()) do
+    for _, orb in ipairs(orbs) do
         if orb:IsA("Part") and orb:IsDescendantOf(game.Workspace) then
             local distance = (hrp.Position - orb.Position).Magnitude
             if distance < shortestDistance then
@@ -263,18 +263,25 @@ local function getNearestOrb()
     return nearestOrb
 end
 
-local function teleportToNearestOrb()
+local function collectOrb(orb)
+    if not orb then return end
+    hrp.CFrame = CFrame.new(orb.Position)
+    wait(0.5) -- Slight delay to simulate collection time
+end
+
+local function collectNearestOrb()
     if not autoCollectorb then return end
 
-    local nearestOrb = getNearestOrb()
-    if nearestOrb and nearestOrb:IsDescendantOf(game.Workspace) then
-        hrp.CFrame = CFrame.new(nearestOrb.Position)
-        wait(0.5) -- Slight delay to allow for orb collection
+    local orbs = game.Workspace.__THINGS.Orbs:GetChildren()
+    local nearestOrb = getNearestOrb(orbs)
+
+    if nearestOrb then
+        collectOrb(nearestOrb)
     end
 end
 
 RunService.Heartbeat:Connect(function()
-    teleportToNearestOrb()
+    collectNearestOrb()
 end)
 
 local screenGui = Instance.new("ScreenGui", game.Players.LocalPlayer.PlayerGui)
