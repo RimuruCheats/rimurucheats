@@ -247,13 +247,71 @@ if firstTabName then
     myGui.tabContents[firstTabName].Visible = true
 end
 
+local autofarmClick = false;
+local clickfarmMethod = "Multiple Targets";
 local autoCollectorb = false
+
 local RunService = game:GetService("RunService")
 local player = game.Players.LocalPlayer
 local character = player.Character or player.CharacterAdded:Wait()
 local hrp = character:WaitForChild("HumanoidRootPart")
 local TweenService = game:GetService("TweenService")
+local breakablesFolder = game:GetService("Workspace")["__THINGS"].Breakables
+local Remote = game:GetService("ReplicatedStorage").Network.Breakables_PlayerDealDamage
 
+local function callRemoteForObject(objectName)
+    Remote:FireServer(objectName)
+end
+
+local function getNearestBreakable()
+    local nearestBreakable = nil
+    local shortestDistance = math.huge
+
+    for _, object in ipairs(breakablesFolder:GetChildren()) do
+        if object:IsA("Model") then
+            local objectPosition = object:GetPrimaryPartCFrame().Position
+            local distance = (hrp.Position - objectPosition).Magnitude
+
+            if distance < shortestDistance then
+                shortestDistance = distance
+                nearestBreakable = object
+            end
+        end
+    end
+
+    return nearestBreakable
+end
+
+local function destroyBreakables(targets)
+    for _, target in ipairs(targets) do
+        local objectName = target.Name
+        callRemoteForObject(objectName)
+    end
+end
+
+RunService.Heartbeat:Connect(function()
+    if clickfarmMethod == "Multiple Targets" then
+        local breakableObjects = {}
+    
+        for _, object in breakablesFolder:GetChildren() do
+            if object:IsA("Model") then
+                table.insert(breakableObjects, object)
+            end
+        end
+
+        if #breakableObjects > 0 then
+            destroyBreakables(breakableObjects)
+        end
+    elseif clickfarmMethod == "One Target" then
+        local nearestBreakable = getNearestBreakable()
+    
+        if nearestBreakable then
+            local objectName = nearestBreakable.Name
+            callRemoteForObject(objectName)
+        end
+    end
+
+end)
 
 local function setCharacterCollisions(statua)
     for _, part in character:GetDescendants() do
@@ -346,4 +404,8 @@ myGui:CreateToggle("Auto Farm", "Collect orbs", function(state)
     if not state then
         setCharacterCollisions(true)
     end
+end)
+
+myGui:CreateToggle("Auto Farm", "Auto Click Farm", function(state)
+    autofarmClick = state;
 end)
