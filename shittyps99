@@ -248,35 +248,42 @@ if firstTabName then
     myGui.tabContents[firstTabName].Visible = true
 end
 
-local autoCollectorb = false;
-local RunService = game:GetService("RunService");
+local autoCollectorb = false
+local RunService = game:GetService("RunService")
 local player = game.Players.LocalPlayer
 local character = player.Character or player.CharacterAdded:Wait()
 local hrp = character:WaitForChild("HumanoidRootPart")
 
-local function teleportToNextOrb()
-    local orbs = game.Workspace.__THINGS.Orbs:GetChildren()
+local function getNearestOrb()
+    local nearestOrb = nil
+    local shortestDistance = math.huge  -- Initialize with a very large number
 
-    while #orbs > 0 do
-        for i, orb in ipairs(orbs) do
-            if orb:IsA("Part") then
-                hrp.CFrame = CFrame.new(orb.Position)
-                tas.wait(0.2) -- Wait for 1 second at each orb
-                orbs = game.Workspace.__THINGS.Orbs:GetChildren() -- Update the orbs list
-                if #orbs == 0 then
-                    break  -- Exit immediately if there are no orbs left
-                end
+    for _, orb in ipairs(game.Workspace.__THINGS.Orbs:GetChildren()) do
+        if orb:IsA("Part") then
+            local distance = (hrp.Position - orb.Position).Magnitude
+            if distance < shortestDistance then
+                shortestDistance = distance
+                nearestOrb = orb
             end
         end
+    end
+
+    return nearestOrb
+end
+
+local function teleportToNearestOrb()
+    local nearestOrb = getNearestOrb()
+    if nearestOrb then
+        hrp.CFrame = CFrame.new(nearestOrb.Position)
     end
 end
 
 RunService.Heartbeat:Connect(function()
-    if not autoCollectorb then return end
-    teleportToNextOrb()
+    if autoCollectorb then
+        teleportToNearestOrb()
+    end
 end)
 
-myGui:CreateToggle("Auto Farm", "Collect orbs", function()
-    autoCollectorb = true;
+myGui:CreateToggle("Auto Farm", "Collect orbs", function(state)
+    autoCollectorb = state
 end)
-
