@@ -110,6 +110,13 @@ function GuiLibrary.new(screenGui, title)
 
     self.tabs = {}
     self.buttons = {}
+    self.contentFrame = Instance.new("Frame", self.window)
+    self.contentFrame.Name = "ContentFrame"
+    self.contentFrame.Size = UDim2.new(1, 0, 1, -24)
+    self.contentFrame.Position = UDim2.new(0, 0, 0, 24)
+    self.contentFrame.BackgroundTransparency = 1 -- Make it transparent or set a color
+    self.contentFrame.ZIndex = 1
+    self.contentFrame.Visible = true
 
     return self
 end
@@ -127,6 +134,24 @@ function GuiLibrary:addTab(name)
     tab.Font = Enum.Font.SourceSansBold
     tab.TextScaled = true
     self.tabs[name] = tab
+
+    -- Create a content frame for the tab
+    local tabContent = Instance.new("Frame", self.contentFrame)
+    tabContent.Name = name.."Content"
+    tabContent.Size = UDim2.new(1, 0, 1, -24)
+    tabContent.Position = UDim2.new(0, 0, 0, 0)
+    tabContent.BackgroundTransparency = 1 -- Make it transparent or set a color
+    tabContent.ZIndex = 1
+    tabContent.Visible = false -- Initially set to invisible
+
+    tab.MouseButton1Click:Connect(function()
+        -- Hide all tab contents
+        for _, content in pairs(self.contentFrame:GetChildren()) do
+            content.Visible = false
+        end
+        -- Show the clicked tab's content
+        tabContent.Visible = true
+    end)
 
     self:autoSortTabs()
 end
@@ -146,14 +171,13 @@ end
 
 function GuiLibrary:addButton(tabName, buttonText, callback)
     assert(tabName and buttonText, "Tab name and button text are required")
-
-    local tab = self.tabs[tabName]
-    if not tab then
-        warn("Tab not found:", tabName)
+    local tabContent = self.contentFrame:FindFirstChild(tabName.."Content")
+    if not tabContent then
+        warn("Tab content frame not found for:", tabName)
         return
     end
 
-    local button = Instance.new("TextButton", tab)
+    local button = Instance.new("TextButton", tabContent)
     button.Name = buttonText
     button.Text = buttonText
     button.Size = UDim2.new(1, -20, 0, 50)
@@ -169,15 +193,15 @@ function GuiLibrary:addButton(tabName, buttonText, callback)
         button.MouseButton1Click:Connect(callback)
     end
 
-    self:autoSortButtons(tab)
+    self:autoSortButtons(tabContent)
 end
 
-function GuiLibrary:autoSortButtons(tab)
+function GuiLibrary:autoSortButtons(tabContent)
     local buttonHeight = 50
-    local yPos = 24 -- Start below the tab
-    for _, button in pairs(tab:GetChildren()) do
+    local yPos = 0 -- Start from the top of the content frame
+    for _, button in pairs(tabContent:GetChildren()) do
         if button:IsA("TextButton") then
-            button.Position = UDim2.new(0.5, -button.Size.X.Offset / 2, 0, yPos)
+            button.Position = UDim2.new(0, 10, 0, yPos)
             yPos = yPos + buttonHeight + 10
         end
     end
@@ -198,3 +222,8 @@ myGui:addTab("About")
 myGui:addButton("Home", "Click Me", function()
     print("Button clicked")
 end)
+
+-- Make the first tab's content visible by default
+if myGui.contentFrame:FindFirstChild("HomeContent") then
+    myGui.contentFrame:FindFirstChild("HomeContent").Visible = true
+end
