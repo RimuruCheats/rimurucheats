@@ -283,18 +283,16 @@ end
 
 local function tweenToNearestOrb()
     if not autoCollectorb then return end
-
     local nearestOrb = getNearestOrb()
     if nearestOrb then
-        setCharacterCollisions(false)
-        
+        setCharacterCollisions(false);
         local tweenInfo = TweenInfo.new(
-            (hrp.Position - nearestOrb.Position).Magnitude / 50, -- Duration based on distance
-            Enum.EasingStyle.Linear, -- Easing style of the tween (change as needed)
-            Enum.EasingDirection.Out, -- Easing direction of the tween
-            0, -- Number of times to repeat
-            false, -- Should the tween repeat?
-            0 -- Delay time before tween starts
+            0.2, 
+            Enum.EasingStyle.Linear, 
+            Enum.EasingDirection.Out, 
+            0, 
+            false, 
+            0
         )
         local tweenGoal = {CFrame = CFrame.new(nearestOrb.Position)}
         local tween = TweenService:Create(hrp, tweenInfo, tweenGoal)
