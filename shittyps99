@@ -248,7 +248,7 @@ if firstTabName then
 end
 
 local autofarmClick = false;
-local clickfarmMethod = "Multiple Targets";
+local clickfarmMethod = "One Target";
 local autoCollectorb = false;
 
 local RunService = game:GetService("RunService")
