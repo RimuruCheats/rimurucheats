@@ -197,20 +197,86 @@ function GuiLibrary:addButton(tabName, buttonText, callback)
     self.buttons[buttonText] = button
 end
 
+function GuiLibrary:CreateToggle(tabName, toggleText, callback)
+    local content = self.tabContents[tabName]
+    if not content then
+        warn("Tab content not found:", tabName)
+        return
+    end
+
+    local toggle = Instance.new("TextButton", content)
+    toggle.Name = toggleText
+    toggle.Text = toggleText
+    toggle.Size = UDim2.new(1, -20, 0, 50)
+    toggle.Position = UDim2.new(0, 10, 0, #content:GetChildren() * 60)
+    toggle.BackgroundColor3 = Color3.fromRGB(25, 25, 25)
+    toggle.ZIndex = 2
+    toggle.BorderSizePixel = 0
+    toggle.TextColor3 = Color3.new(1, 1, 1)
+    toggle.Font = Enum.Font.SourceSansBold
+    toggle.TextScaled = true
+
+    local toggleState = false
+    local function updateToggle()
+        if toggleState then
+            toggle.BackgroundColor3 = Color3.fromRGB(0, 255, 0) -- Green for ON
+        else
+            toggle.BackgroundColor3 = Color3.fromRGB(255, 0, 0) -- Red for OFF
+        end
+    end
+
+    toggle.MouseButton1Click:Connect(function()
+        toggleState = not toggleState
+        updateToggle()
+        if callback then
+            callback(toggleState)
+        end
+    end)
+
+    updateToggle() -- Initialize toggle appearance
+    self.buttons[toggleText] = toggle
+end
+
 -- Example usage:
 local screenGui = Instance.new("ScreenGui", game.Players.LocalPlayer.PlayerGui)
 local myGui = GuiLibrary.new(screenGui, "Minty Hub")
 
-myGui:addTab("Home")
-myGui:addTab("Settings")
+myGui:addTab("Auto Farm")
 myGui:addTab("About")
-
-myGui:addButton("Home", "Click Me", function()
-    print("Button clicked")
-end)
-
--- Set the first tab as active (visible)
 local firstTabName = next(myGui.tabs) -- This gets the name of the first added tab
 if firstTabName then
     myGui.tabContents[firstTabName].Visible = true
 end
+
+local autoCollectorb = false;
+local RunService = game:GetService("RunService");
+local player = game.Players.LocalPlayer
+local character = player.Character or player.CharacterAdded:Wait()
+local hrp = character:WaitForChild("HumanoidRootPart")
+
+local function teleportToNextOrb()
+    local orbs = game.Workspace.__THINGS.Orbs:GetChildren()
+
+    while #orbs > 0 do
+        for i, orb in ipairs(orbs) do
+            if orb:IsA("Part") then
+                hrp.CFrame = CFrame.new(orb.Position)
+                tas.wait(0.2) -- Wait for 1 second at each orb
+                orbs = game.Workspace.__THINGS.Orbs:GetChildren() -- Update the orbs list
+                if #orbs == 0 then
+                    break  -- Exit immediately if there are no orbs left
+                end
+            end
+        end
+    end
+end
+
+RunService.Heartbeat:Connect(function()
+    if not autoCollectorb then return end
+    teleportToNextOrb()
+end)
+
+myGui:CreateToggle("Auto Farm", "Collect orbs", function()
+    autoCollectorb = true;
+end)
+
