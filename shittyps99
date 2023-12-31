@@ -71,8 +71,8 @@ function GuiLibrary.new(screenGui, title)
     self.window = Instance.new("Frame")
     self.window.Name = "GuiLibraryWindow"
     self.window.Parent = screenGui
-    self.window.Size = UDim2.new(0, 400, 0, 300) -- Original size
-    self.window.Position = UDim2.new(0.5, -200, 0.5, -150) -- Center the window
+    self.window.Size = UDim2.new(0, 400, 0, 300)
+    self.window.Position = UDim2.new(0.5, -200, 0.5, -150)
     self.window.BackgroundColor3 = Color3.fromRGB(30, 30, 30)
     self.window.BorderSizePixel = 0
     self.window.ZIndex = 1
@@ -94,18 +94,20 @@ function GuiLibrary.new(screenGui, title)
     createShadow(self.window)
 
     -- Close button setup
-    local closeButton = Instance.new("TextButton", self.window)
+    local closeButton = Instance.new("TextButton", self.titleBar)
     closeButton.Size = UDim2.new(0, 24, 0, 24)
-    closeButton.Position = UDim2.new(1, -28, 0, 2)
+    closeButton.Position = UDim2.new(1, -24, 0, 0)
     closeButton.BackgroundColor3 = Color3.fromRGB(255, 0, 0)
     closeButton.Text = "X"
     closeButton.TextColor3 = Color3.new(1, 1, 1)
     closeButton.ZIndex = 2
+    closeButton.BorderSizePixel = 0
+    closeButton.Font = Enum.Font.SourceSans
+    closeButton.TextSize = 14
     closeButton.MouseButton1Click:Connect(function()
         self.window:Destroy()
     end)
 
-    -- Initialize tabs and buttons containers
     self.tabs = {}
     self.buttons = {}
 
@@ -113,116 +115,75 @@ function GuiLibrary.new(screenGui, title)
 end
 
 function GuiLibrary:addTab(name)
-    -- Validate the tab name
     assert(name, "Tab name is required")
 
-    -- Create the tab button
     local tab = Instance.new("TextButton", self.window)
     tab.Name = name
-    tab.Text = name -- Set the text to the name of the tab for visibility
+    tab.Text = name
     tab.BackgroundColor3 = Color3.fromRGB(45, 45, 45)
     tab.Size = UDim2.new(0, 100, 0, 24)
     tab.ZIndex = 2
-    tab.TextColor3 = Color3.new(1, 1, 1) -- Ensure text is visible
+    tab.TextColor3 = Color3.new(1, 1, 1)
     tab.Font = Enum.Font.SourceSansBold
     tab.TextScaled = true
-
-    local numTabs = 0
-    for _ in pairs(self.tabs) do numTabs = numTabs + 1 end
-    local tabWidth = numTabs > 0 and 1 / numTabs or 1
-
-    for _, tab in pairs(self.tabs) do
-        tab.Size = UDim2.new(tabWidth, 0, 0, 24) -- Set tab width relative to the number of tabs
-    end
-    
-    tab.Size = UDim2.new(tabWidth, 0, 0, 24) -- Apply the size to the new tab as well
-
-    -- Save the tab
     self.tabs[name] = tab
 
-    -- Adjust tabs and window size
     self:autoSortTabs()
 end
 
 function GuiLibrary:autoSortTabs()
-    -- Calculate the total width based on tabs
-    local totalWidth = 0
-    for _, tab in pairs(self.tabs) do
-        totalWidth = totalWidth + tab.Size.X.Offset
-    end
-    totalWidth = math.max(totalWidth, 400) -- Ensure minimum width
-    self.window.Size = UDim2.new(0, totalWidth, 0, 300)
+    local tabCount = 0
+    for _ in pairs(self.tabs) do tabCount = tabCount + 1 end
+    local tabWidth = tabCount > 0 and 1 / tabCount or 1
 
-    -- Update tab positions
-    local xPos = 0
+    local index = 0
     for _, tab in pairs(self.tabs) do
-        tab.Position = UDim2.new(0, xPos, 0, self.titleBar.Size.Y.Offset)
-        xPos = xPos + tab.Size.X.Offset
-    end
-    local tabSize = 1 / table.getn(self.tabs) -- Calculate size for equal width
-    for index, tab in pairs(self.tabs) do
-        tab.Size = UDim2.new(tabSize, 0, 0, 24) -- Adjust size for each tab
-        tab.Position = UDim2.new(tabSize * (index - 1), 0, 0, self.titleBar.Size.Y.Offset) -- Position each tab accordingly
+        tab.Size = UDim2.new(tabWidth, -4, 0, 24)
+        tab.Position = UDim2.new(index * tabWidth, 2, 0, 0)
+        index = index + 1
     end
 end
 
 function GuiLibrary:addButton(tabName, buttonText, callback)
-    -- Validate tab and button names
     assert(tabName and buttonText, "Tab name and button text are required")
 
-    -- Find the tab
     local tab = self.tabs[tabName]
     if not tab then
         warn("Tab not found:", tabName)
         return
     end
 
-    -- Create the button
     local button = Instance.new("TextButton", tab)
     button.Name = buttonText
     button.Text = buttonText
-    button.Size = UDim2.new(0, 80, 0, 30) -- Adjusted size
+    button.Size = UDim2.new(1, -20, 0, 50)
     button.BackgroundColor3 = Color3.fromRGB(25, 25, 25)
     button.ZIndex = 2
     button.BorderSizePixel = 0
     button.TextColor3 = Color3.new(1, 1, 1)
     button.Font = Enum.Font.SourceSansBold
     button.TextScaled = true
+    self.buttons[buttonText] = button
 
-    -- Set callback if provided
     if callback then
         button.MouseButton1Click:Connect(callback)
     end
 
-    local yPos = 24 -- Start below the tabs
-    local numButtons = 0
-    for _ in pairs(self.buttons) do numButtons = numButtons + 1 end
-    local buttonHeight = math.floor((300 - yPos) / (numButtons + 1)) -- Divide the remaining space by the number of buttons
-
-    button.Size = UDim2.new(1, -20, 0, buttonHeight) -- Adjust the button size to fit within the tab
-    button.Position = UDim2.new(0, 10, 0, yPos + (buttonHeight + 5) * numButtons) -- Adjust button position
-    -- Save the button
-    self.buttons[buttonText] = button
-
-    -- Sort the buttons
     self:autoSortButtons(tab)
 end
 
 function GuiLibrary:autoSortButtons(tab)
-    -- Adjust button sizes and positions to fit aesthetically in the tab
-    local yPos = 24 -- Start below the tabs
-    local buttonHeight = math.floor((300 - yPos) / table.getn(tab:GetChildren())) -- Calculate button height
-
+    local buttonHeight = 50
+    local yPos = 24 -- Start below the tab
     for _, button in pairs(tab:GetChildren()) do
         if button:IsA("TextButton") then
-            button.Size = UDim2.new(1, -20, 0, buttonHeight) -- Adjust button width to tab width
-            button.Position = UDim2.new(0, 10, 0, yPos) -- Position button
-            yPos = yPos + buttonHeight + 5 -- Increment yPos for the next button
+            button.Position = UDim2.new(0.5, -button.Size.X.Offset / 2, 0, yPos)
+            yPos = yPos + buttonHeight + 10
         end
     end
 end
 
--- Example usage
+-- Example usage:
 local ReplicatedStorage = game:GetService("ReplicatedStorage")
 local Players = game:GetService("Players")
 
