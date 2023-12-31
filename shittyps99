@@ -246,12 +246,22 @@ local player = game.Players.LocalPlayer
 local character = player.Character or player.CharacterAdded:Wait()
 local hrp = character:WaitForChild("HumanoidRootPart")
 
-local function getNearestOrb(orbs)
+-- Function to disable/enable character collisions
+local function setCharacterCollisions(enable)
+    for _, part in pairs(character:GetDescendants()) do
+        if part:IsA("BasePart") then
+            part.CanCollide = enable
+        end
+    end
+end
+
+local function getNearestOrb()
     local nearestOrb = nil
     local shortestDistance = math.huge
+    local orbs = game.Workspace.__THINGS.Orbs:GetChildren()
 
     for _, orb in ipairs(orbs) do
-        if orb:IsA("Part") and orb:IsDescendantOf(game.Workspace) then
+        if orb:IsA("Part") then
             local distance = (hrp.Position - orb.Position).Magnitude
             if distance < shortestDistance then
                 shortestDistance = distance
@@ -263,38 +273,23 @@ local function getNearestOrb(orbs)
     return nearestOrb
 end
 
-local function collectOrb(orb)
-    if not orb then return end
-    hrp.CFrame = CFrame.new(orb.Position)
-    wait(0.5) -- Slight delay to simulate collection time
-end
-
-local function collectNearestOrb()
+local function teleportToNearestOrb()
     if not autoCollectorb then return end
 
-    local orbs = game.Workspace.__THINGS.Orbs:GetChildren()
-    local nearestOrb = getNearestOrb(orbs)
-
+    local nearestOrb = getNearestOrb()
     if nearestOrb then
-        collectOrb(nearestOrb)
+        setCharacterCollisions(false) -- Disable collisions (noclip)
+        hrp.CFrame = CFrame.new(nearestOrb.Position)
+        wait(0.1) -- Wait briefly for teleportation to register
+        setCharacterCollisions(true) -- Re-enable collisions
     end
 end
 
-RunService.Heartbeat:Connect(function()
-    collectNearestOrb()
-end)
-
-local screenGui = Instance.new("ScreenGui", game.Players.LocalPlayer.PlayerGui)
-local myGui = GuiLibrary.new(screenGui, "Minty Hub")
-
-myGui:addTab("Auto Farm")
-myGui:addTab("About")
-local firstTabName = next(myGui.tabs) -- This gets the name of the first added tab
-if firstTabName then
-    myGui.tabContents[firstTabName].Visible = true
-end
+RunService.Heartbeat:Connect(teleportToNearestOrb)
 
 myGui:CreateToggle("Auto Farm", "Collect orbs", function(state)
     autoCollectorb = state
+    if not state then
+        setCharacterCollisions(true) -- Make sure to re-enable collisions when toggled off
+    end
 end)
-
