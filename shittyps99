@@ -251,7 +251,7 @@ local function getNearestOrb()
     local shortestDistance = math.huge
 
     for _, orb in ipairs(game.Workspace.__THINGS.Orbs:GetChildren()) do
-        if orb:IsA("Part") then
+        if orb:IsA("Part") and orb:IsDescendantOf(game.Workspace) then
             local distance = (hrp.Position - orb.Position).Magnitude
             if distance < shortestDistance then
                 shortestDistance = distance
@@ -264,20 +264,17 @@ local function getNearestOrb()
 end
 
 local function teleportToNearestOrb()
-    if not autoCollectorb then return end  -- Check if the auto collector is still active
+    if not autoCollectorb then return end
 
     local nearestOrb = getNearestOrb()
-    if nearestOrb then
+    if nearestOrb and nearestOrb:IsDescendantOf(game.Workspace) then
         hrp.CFrame = CFrame.new(nearestOrb.Position)
+        wait(0.5) -- Slight delay to allow for orb collection
     end
 end
 
 RunService.Heartbeat:Connect(function()
     teleportToNearestOrb()
-end)
-
-myGui:CreateToggle("Auto Farm", "Collect orbs", function(state)
-    autoCollectorb = state
 end)
 
 local screenGui = Instance.new("ScreenGui", game.Players.LocalPlayer.PlayerGui)
@@ -289,3 +286,8 @@ local firstTabName = next(myGui.tabs) -- This gets the name of the first added t
 if firstTabName then
     myGui.tabContents[firstTabName].Visible = true
 end
+
+myGui:CreateToggle("Auto Farm", "Collect orbs", function(state)
+    autoCollectorb = state
+end)
+
