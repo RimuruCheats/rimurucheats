@@ -103,13 +103,22 @@ function GuiLibrary.new(screenGui, title)
 
     self.tabFrame = Instance.new("Frame", self.window)
     self.tabFrame.Size = UDim2.new(1, 0, 0, 24)
-    self.tabFrame.Position = UDim2.new(0, 0, 0, 24)
+    self.tabFrame.Position = UDim2.new(0, 0, 0, self.titleBar.Size.Y.Offset)
     self.tabFrame.BackgroundColor3 = Color3.fromRGB(20, 20, 20)
     self.tabFrame.BorderSizePixel = 0
     self.tabFrame.ZIndex = 1
 
+    self.contentFrame = Instance.new("Frame", self.window)
+    self.contentFrame.Size = UDim2.new(1, 0, 1, -self.tabFrame.Size.Y.Offset - self.titleBar.Size.Y.Offset)
+    self.contentFrame.Position = UDim2.new(0, 0, 0, self.tabFrame.Size.Y.Offset + self.titleBar.Size.Y.Offset)
+    self.contentFrame.BackgroundColor3 = Color3.fromRGB(30, 30, 30)
+    self.contentFrame.BorderSizePixel = 0
+    self.contentFrame.ZIndex = 1
+    self.contentFrame.BackgroundTransparency = 1 -- Make it transparent or set a color
+
     self.tabs = {}
     self.buttons = {}
+    self.tabContents = {}
 
     return self
 end
@@ -128,42 +137,44 @@ function GuiLibrary:addTab(name)
     tab.TextScaled = true
     self.tabs[name] = tab
 
-    local tabContent = Instance.new("Frame", self.contentFrame)
-    tabContent.Name = name.."Content"
-    tabContent.Size = UDim2.new(1, 0, 1, -24)
-    tabContent.Position = UDim2.new(0, 0, 0, 0)
-    tabContent.BackgroundTransparency = 1 
-    tabContent.ZIndex = 1
-    tabContent.Visible = false
+    local content = Instance.new("Frame", self.contentFrame)
+    content.Name = name .. "Content"
+    content.Size = UDim2.new(1, 0, 1, 0)
+    content.BackgroundTransparency = 1
+    content.ZIndex = 1
+    content.Visible = false -- Initially set to invisible
+
+    self.tabs[name] = tab
+    self.tabContents[name] = content
 
     tab.MouseButton1Click:Connect(function()
-        for _, content in pairs(self.contentFrame:GetChildren()) do
-            content.Visible = false
+        -- Hide all tab contents
+        for _, cont in pairs(self.tabContents) do
+            cont.Visible = false
         end
-        tabContent.Visible = true
+        -- Show the clicked tab's content
+        content.Visible = true
     end)
 
     self:autoSortTabs()
 end
 
 function GuiLibrary:autoSortTabs()
-    local tabCount = 0
-    for _ in pairs(self.tabs) do tabCount = tabCount + 1 end
-    local tabWidth = tabCount > 0 and 1 / tabCount or 1
+    local count = 0
+    for _ in pairs(self.tabs) do count = count + 1 end
 
-    local index = 0
-    for _, tab in pairs(self.tabs) do
-        tab.Size = UDim2.new(tabWidth, -4, 0, 24)
-        tab.Position = UDim2.new(index * tabWidth, 2, 0, 0)
-        index = index + 1
+    local tabWidth = 1 / count
+    for i, tab in pairs(self.tabs) do
+        tab.Size = UDim2.new(tabWidth, -4, 1, 0)
+        tab.Position = UDim2.new(tabWidth * (i-1), 2, 0, 0)
     end
 end
 
 function GuiLibrary:addButton(tabName, buttonText, callback)
     assert(tabName and buttonText, "Tab name and button text are required")
-    local tabContent = self.contentFrame:FindFirstChild(tabName.."Content")
-    if not tabContent then
-        warn("Tab content frame not found for:", tabName)
+    local content = self.tabContents[tabName]
+    if not content then
+        warn("Tab content not found:", tabName)
         return
     end
 
@@ -183,7 +194,8 @@ function GuiLibrary:addButton(tabName, buttonText, callback)
         button.MouseButton1Click:Connect(callback)
     end
 
-    self:autoSortButtons(tabContent)
+    self.buttons[buttonText] = button
+    self:autoSortButtons(content)
 end
 
 function GuiLibrary:autoSortButtons(tabContent)
