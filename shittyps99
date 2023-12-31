@@ -101,7 +101,6 @@ function GuiLibrary.new(screenGui, title)
         self.window:Destroy()
     end)
 
-    -- Separate frame for tabs
     self.tabFrame = Instance.new("Frame", self.window)
     self.tabFrame.Size = UDim2.new(1, 0, 0, 24)
     self.tabFrame.Position = UDim2.new(0, 0, 0, 24)
@@ -129,21 +128,18 @@ function GuiLibrary:addTab(name)
     tab.TextScaled = true
     self.tabs[name] = tab
 
-    -- Create a content frame for the tab
     local tabContent = Instance.new("Frame", self.contentFrame)
     tabContent.Name = name.."Content"
     tabContent.Size = UDim2.new(1, 0, 1, -24)
     tabContent.Position = UDim2.new(0, 0, 0, 0)
-    tabContent.BackgroundTransparency = 1 -- Make it transparent or set a color
+    tabContent.BackgroundTransparency = 1 
     tabContent.ZIndex = 1
-    tabContent.Visible = false -- Initially set to invisible
+    tabContent.Visible = false
 
     tab.MouseButton1Click:Connect(function()
-        -- Hide all tab contents
         for _, content in pairs(self.contentFrame:GetChildren()) do
             content.Visible = false
         end
-        -- Show the clicked tab's content
         tabContent.Visible = true
     end)
 
@@ -192,7 +188,7 @@ end
 
 function GuiLibrary:autoSortButtons(tabContent)
     local buttonHeight = 50
-    local yPos = 0 -- Start from the top of the content frame
+    local yPos = 0
     for _, button in pairs(tabContent:GetChildren()) do
         if button:IsA("TextButton") then
             button.Position = UDim2.new(0, 10, 0, yPos)
@@ -201,7 +197,6 @@ function GuiLibrary:autoSortButtons(tabContent)
     end
 end
 
--- Example usage:
 local ReplicatedStorage = game:GetService("ReplicatedStorage")
 local Players = game:GetService("Players")
 
@@ -217,7 +212,6 @@ myGui:addButton("Home", "Click Me", function()
     print("Button clicked")
 end)
 
--- Make the first tab's content visible by default
 if myGui.contentFrame:FindFirstChild("HomeContent") then
     myGui.contentFrame:FindFirstChild("HomeContent").Visible = true
 end
