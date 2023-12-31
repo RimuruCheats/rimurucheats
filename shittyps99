@@ -219,9 +219,9 @@ function GuiLibrary:CreateToggle(tabName, toggleText, callback)
     local toggleState = false
     local function updateToggle()
         if toggleState then
-            toggle.BackgroundColor3 = Color3.fromRGB(0, 255, 0) -- Green for ON
+            toggle.BackgroundColor3 = Color3.fromRGB(0, 255, 0)
         else
-            toggle.BackgroundColor3 = Color3.fromRGB(255, 0, 0) -- Red for OFF
+            toggle.BackgroundColor3 = Color3.fromRGB(255, 0, 0)
         end
     end
 
@@ -233,11 +233,10 @@ function GuiLibrary:CreateToggle(tabName, toggleText, callback)
         end
     end)
 
-    updateToggle() -- Initialize toggle appearance
+    updateToggle() 
     self.buttons[toggleText] = toggle
 end
 
--- Example usage:
 
 
 local autoCollectorb = false
@@ -246,7 +245,6 @@ local player = game.Players.LocalPlayer
 local character = player.Character or player.CharacterAdded:Wait()
 local hrp = character:WaitForChild("HumanoidRootPart")
 
--- Function to disable/enable character collisions
 local function setCharacterCollisions(enable)
     for _, part in pairs(character:GetDescendants()) do
         if part:IsA("BasePart") then
@@ -278,18 +276,17 @@ local function teleportToNearestOrb()
 
     local nearestOrb = getNearestOrb()
     if nearestOrb then
-        setCharacterCollisions(false) -- Disable collisions (noclip)
+        setCharacterCollisions(false)
         hrp.CFrame = CFrame.new(nearestOrb.Position)
-        wait(0.1) -- Wait briefly for teleportation to register
-        setCharacterCollisions(true) -- Re-enable collisions
+        wait(0.1)
+        setCharacterCollisions(true)
     end
 end
 
 RunService.Heartbeat:Connect(teleportToNearestOrb)
 
-myGui:CreateToggle("Auto Farm", "Collect orbs", function(state)
+GuiLibrary:CreateToggle("Auto Farm", "Collect orbs", function(state)
     autoCollectorb = state
     if not state then
-        setCharacterCollisions(true) -- Make sure to re-enable collisions when toggled off
-    end
+        setCharacterCollisions(true) 
 end)
