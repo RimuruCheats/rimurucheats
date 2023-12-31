@@ -288,5 +288,6 @@ RunService.Heartbeat:Connect(teleportToNearestOrb)
 GuiLibrary:CreateToggle("Auto Farm", "Collect orbs", function(state)
     autoCollectorb = state
     if not state then
-        setCharacterCollisions(true) 
+        setCharacterCollisions(true)
+    end
 end)
