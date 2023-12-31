@@ -224,6 +224,7 @@ myGui:addButton("Home", "Click Me", function()
     print("Button clicked")
 end)
 
-if myGui.contentFrame:FindFirstChild("HomeContent") then
-    myGui.contentFrame:FindFirstChild("HomeContent").Visible = true
+local firstTabName = next(GuiLibrary.tabs) -- This gets the name of the first added tab
+if firstTabName then
+    GuiLibrary.tabContents[firstTabName].Visible = true
 end
