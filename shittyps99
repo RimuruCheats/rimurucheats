@@ -249,7 +249,7 @@ end
 
 local autofarmClick = false;
 local clickfarmMethod = "Multiple Targets";
-local autoCollectorb = false
+local autoCollectorb = false;
 
 local RunService = game:GetService("RunService")
 local player = game.Players.LocalPlayer
@@ -324,14 +324,14 @@ end
 
 local function getNearestOrb()
     local nearestOrb = nil
-    local shortestDistance = math.huge
+    local maxDistance = 90
     local orbs = game.Workspace.__THINGS.Orbs:GetChildren()
 
     for _, orb in ipairs(orbs) do
         if orb:IsA("Part") then
             local distance = (hrp.Position - orb.Position).Magnitude
-            if distance < shortestDistance then
-                shortestDistance = distance
+            if distance < maxDistance then
+                maxDistance = distance
                 nearestOrb = orb
             end
         end
@@ -342,14 +342,14 @@ end
 
 local function getNearestLootbag()
     local nearestLootbag = nil
-    local shortestDistance = math.huge
+    local maxDistance = 90
     local lootbags = game.Workspace.__THINGS.Lootbags:GetChildren()
 
     for _, lootbag in ipairs(lootbags) do
         if lootbag:IsA("Model") then
             local distance = (hrp.Position - lootbag.PrimaryPart.Position).Magnitude
-            if distance < shortestDistance then
-                shortestDistance = distance
+            if distance < maxDistance then
+                maxDistance = distance
                 nearestLootbag = lootbag.PrimaryPart
             end
         end
@@ -400,13 +400,13 @@ RunService.Heartbeat:Connect(function ()
     end
 end)
 
-myGui:CreateToggle("Auto Farm", "Collect orbs", function(state)
+myGui:CreateToggle("Auto Farm", "Auto Click Farm", function(state)
+    autofarmClick = state;
+end)
+
+myGui:CreateToggle("Auto Farm", "Auto Collect orbs", function(state)
     autoCollectorb = state
     if not state then
         setCharacterCollisions(true)
     end
-end)
-
-myGui:CreateToggle("Auto Farm", "Auto Click Farm", function(state)
-    autofarmClick = state;
 end)
