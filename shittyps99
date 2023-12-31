@@ -237,7 +237,15 @@ function GuiLibrary:CreateToggle(tabName, toggleText, callback)
     self.buttons[toggleText] = toggle
 end
 
+local screenGui = Instance.new("ScreenGui", game.Players.LocalPlayer.PlayerGui)
+local myGui = GuiLibrary.new(screenGui, "Minty Hub")
 
+myGui:addTab("Auto Farm")
+myGui:addTab("About")
+local firstTabName = next(myGui.tabs)
+if firstTabName then
+    myGui.tabContents[firstTabName].Visible = true
+end
 
 local autoCollectorb = false
 local RunService = game:GetService("RunService")
@@ -285,7 +293,7 @@ end
 
 RunService.Heartbeat:Connect(teleportToNearestOrb)
 
-GuiLibrary:CreateToggle("Auto Farm", "Collect orbs", function(state)
+myGui:CreateToggle("Auto Farm", "Collect orbs", function(state)
     autoCollectorb = state
     if not state then
         setCharacterCollisions(true)
