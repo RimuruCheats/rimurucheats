@@ -238,15 +238,7 @@ function GuiLibrary:CreateToggle(tabName, toggleText, callback)
 end
 
 -- Example usage:
-local screenGui = Instance.new("ScreenGui", game.Players.LocalPlayer.PlayerGui)
-local myGui = GuiLibrary.new(screenGui, "Minty Hub")
 
-myGui:addTab("Auto Farm")
-myGui:addTab("About")
-local firstTabName = next(myGui.tabs) -- This gets the name of the first added tab
-if firstTabName then
-    myGui.tabContents[firstTabName].Visible = true
-end
 
 local autoCollectorb = false
 local RunService = game:GetService("RunService")
@@ -256,7 +248,7 @@ local hrp = character:WaitForChild("HumanoidRootPart")
 
 local function getNearestOrb()
     local nearestOrb = nil
-    local shortestDistance = math.huge  -- Initialize with a very large number
+    local shortestDistance = math.huge
 
     for _, orb in ipairs(game.Workspace.__THINGS.Orbs:GetChildren()) do
         if orb:IsA("Part") then
@@ -272,6 +264,8 @@ local function getNearestOrb()
 end
 
 local function teleportToNearestOrb()
+    if not autoCollectorb then return end  -- Check if the auto collector is still active
+
     local nearestOrb = getNearestOrb()
     if nearestOrb then
         hrp.CFrame = CFrame.new(nearestOrb.Position)
@@ -279,11 +273,19 @@ local function teleportToNearestOrb()
 end
 
 RunService.Heartbeat:Connect(function()
-    if autoCollectorb then
-        teleportToNearestOrb()
-    end
+    teleportToNearestOrb()
 end)
 
 myGui:CreateToggle("Auto Farm", "Collect orbs", function(state)
     autoCollectorb = state
 end)
+
+local screenGui = Instance.new("ScreenGui", game.Players.LocalPlayer.PlayerGui)
+local myGui = GuiLibrary.new(screenGui, "Minty Hub")
+
+myGui:addTab("Auto Farm")
+myGui:addTab("About")
+local firstTabName = next(myGui.tabs) -- This gets the name of the first added tab
+if firstTabName then
+    myGui.tabContents[firstTabName].Visible = true
+end
