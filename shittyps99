@@ -230,10 +230,10 @@ local player = Players.LocalPlayer
 local screenGui = Instance.new("ScreenGui", player.PlayerGui)
 local myGui = GuiLibrary.new(screenGui, "Minty Hub")
 
-local homeTab = myGui:addTab("Home")
+myGui:addTab("Home")
 myGui:addTab("Settings")
 myGui:addTab("About")
 
-myGui:addButton(homeTab, "Click Me", function()
+myGui:addButton("Home", "Click Me", function()
     print("Button clicked")
 end)
