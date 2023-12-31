@@ -171,7 +171,6 @@ function GuiLibrary:autoSortTabs()
     end
 end
 
-
 function GuiLibrary:addButton(tabName, buttonText, callback)
     local content = self.tabContents[tabName]
     if not content then
@@ -198,17 +197,7 @@ function GuiLibrary:addButton(tabName, buttonText, callback)
     self.buttons[buttonText] = button
 end
 
-function GuiLibrary:autoSortButtons(tabContent)
-    local buttonHeight = 50
-    local yPos = 0
-    for _, button in pairs(tabContent:GetChildren()) do
-        if button:IsA("TextButton") then
-            button.Position = UDim2.new(0, 10, 0, yPos)
-            yPos = yPos + buttonHeight + 10
-        end
-    end
-end
-
+-- Example usage:
 local screenGui = Instance.new("ScreenGui", game.Players.LocalPlayer.PlayerGui)
 local myGui = GuiLibrary.new(screenGui, "Minty Hub")
 
