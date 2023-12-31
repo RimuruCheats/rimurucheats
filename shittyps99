@@ -61,17 +61,21 @@ local function makeDraggable(uiElement, frame)
 end
 
 function GuiLibrary.new(screenGui, title)
-    -- Ensure no duplicate GUI exists
-    if screenGui:FindFirstChild("GuiLibraryWindow") then
-        screenGui:FindFirstChild("GuiLibraryWindow"):Destroy()
-    end
-
     local self = setmetatable({}, GuiLibrary)
+    self.screenGui = screenGui
+    self.title = title
+    self.tabs = {}
+    self.tabContents = {}
+    self.buttons = {}
+    self:init()
+    return self
+end
 
-    -- Create main GUI window frame
+function GuiLibrary:init()
+    -- Main GUI Window
     self.window = Instance.new("Frame")
     self.window.Name = "GuiLibraryWindow"
-    self.window.Parent = screenGui
+    self.window.Parent = self.screenGui
     self.window.Size = UDim2.new(0, 400, 0, 300)
     self.window.Position = UDim2.new(0.5, -200, 0.5, -150)
     self.window.BackgroundColor3 = Color3.fromRGB(30, 30, 30)
@@ -79,11 +83,11 @@ function GuiLibrary.new(screenGui, title)
     self.window.ZIndex = 1
     self.window.Visible = true
 
-    -- Create title bar
+    -- Title Bar
     self.titleBar = Instance.new("TextLabel", self.window)
     self.titleBar.Size = UDim2.new(1, 0, 0, 24)
     self.titleBar.BackgroundColor3 = Color3.fromRGB(25, 25, 25)
-    self.titleBar.Text = title or "Window"
+    self.titleBar.Text = self.title
     self.titleBar.ZIndex = 2
     self.titleBar.BorderSizePixel = 0
     self.titleBar.TextColor3 = Color3.new(1, 1, 1)
@@ -94,30 +98,30 @@ function GuiLibrary.new(screenGui, title)
     makeDraggable(self.titleBar, self.window)
     createShadow(self.window)
 
-    -- Create close button
-    local closeButton = Instance.new("TextButton", self.titleBar)
-    closeButton.Size = UDim2.new(0, 24, 0, 24)
-    closeButton.Position = UDim2.new(1, -24, 0, 0)
-    closeButton.BackgroundColor3 = Color3.fromRGB(255, 0, 0)
-    closeButton.Text = "X"
-    closeButton.TextColor3 = Color3.new(1, 1, 1)
-    closeButton.ZIndex = 2
-    closeButton.BorderSizePixel = 0
-    closeButton.Font = Enum.Font.SourceSans
-    closeButton.TextSize = 14
-    closeButton.MouseButton1Click:Connect(function()
+    -- Close Button
+    self.closeButton = Instance.new("TextButton", self.titleBar)
+    self.closeButton.Size = UDim2.new(0, 24, 0, 24)
+    self.closeButton.Position = UDim2.new(1, -24, 0, 0)
+    self.closeButton.BackgroundColor3 = Color3.fromRGB(255, 0, 0)
+    self.closeButton.Text = "X"
+    self.closeButton.TextColor3 = Color3.new(1, 1, 1)
+    self.closeButton.ZIndex = 2
+    self.closeButton.BorderSizePixel = 0
+    self.closeButton.Font = Enum.Font.SourceSans
+    self.closeButton.TextSize = 14
+    self.closeButton.MouseButton1Click:Connect(function()
         self.window:Destroy()
     end)
 
-    -- Create a separate frame for tabs below the title bar
+    -- Tabs Frame
     self.tabsFrame = Instance.new("Frame", self.window)
     self.tabsFrame.Size = UDim2.new(1, 0, 0, 24)
     self.tabsFrame.Position = UDim2.new(0, 0, 0, self.titleBar.Size.Y.Offset)
     self.tabsFrame.BackgroundColor3 = Color3.fromRGB(20, 20, 20)
     self.tabsFrame.BorderSizePixel = 0
-    self.tabsFrame.ZIndex = 2
+    self.tabsFrame.ZIndex = 1
 
-    -- Create a frame to hold the content for each tab
+    -- Content Frame
     self.contentFrame = Instance.new("Frame", self.window)
     self.contentFrame.Size = UDim2.new(1, 0, 1, -self.titleBar.Size.Y.Offset - self.tabsFrame.Size.Y.Offset)
     self.contentFrame.Position = UDim2.new(0, 0, 0, self.titleBar.Size.Y.Offset + self.tabsFrame.Size.Y.Offset)
@@ -125,18 +129,10 @@ function GuiLibrary.new(screenGui, title)
     self.contentFrame.BorderSizePixel = 0
     self.contentFrame.ZIndex = 1
     self.contentFrame.BackgroundTransparency = 1
-
-    self.tabs = {}
-    self.tabContents = {}
-    self.buttons = {}
-
-    return self
 end
 
 function GuiLibrary:addTab(name)
-    assert(name, "Tab name is required")
-
-    local tab = Instance.new("TextButton", self.tabFrame)
+    local tab = Instance.new("TextButton", self.tabsFrame)
     tab.Name = name
     tab.Text = name
     tab.BackgroundColor3 = Color3.fromRGB(45, 45, 45)
@@ -145,69 +141,61 @@ function GuiLibrary:addTab(name)
     tab.TextColor3 = Color3.new(1, 1, 1)
     tab.Font = Enum.Font.SourceSansBold
     tab.TextScaled = true
-    self.tabs[name] = tab
 
     local content = Instance.new("Frame", self.contentFrame)
-    content.Name = name .. "Content"
+    content.Name = name.."Content"
     content.Size = UDim2.new(1, 0, 1, 0)
     content.BackgroundTransparency = 1
     content.ZIndex = 1
-    content.Visible = false -- Initially set to invisible
+    content.Visible = false
 
     self.tabs[name] = tab
     self.tabContents[name] = content
 
     tab.MouseButton1Click:Connect(function()
-        -- Hide all contents and show the one for this tab
-        for _, cont in pairs(self.tabContents) do
-            cont.Visible = false
+        for _, v in pairs(self.tabContents) do
+            v.Visible = false
         end
-        content.Visible = true
+        self.tabContents[name].Visible = true
     end)
-
-    self.tabs[name] = tab
-    self.tabContents[name] = content
 
     self:autoSortTabs()
 end
 
 function GuiLibrary:autoSortTabs()
-    local count = 0
-    for _ in pairs(self.tabs) do count = count + 1 end
-    local tabWidth = 1 / count
-    for name, tab in pairs(self.tabs) do
+    local tabCount = #self.tabsFrame:GetChildren()
+    local tabWidth = 1 / tabCount
+    for i, tab in ipairs(self.tabsFrame:GetChildren()) do
         tab.Size = UDim2.new(tabWidth, -4, 1, 0)
-        tab.Position = UDim2.new((count - 1) * tabWidth, 2, 0, 0)
-        self.tabContents[name].Size = UDim2.new(1, 0, 1, 0)
+        tab.Position = UDim2.new((i - 1) * tabWidth, 2, 0, 0)
     end
 end
 
+
 function GuiLibrary:addButton(tabName, buttonText, callback)
-    assert(tabName and buttonText, "Tab name and button text are required")
     local content = self.tabContents[tabName]
     if not content then
         warn("Tab content not found:", tabName)
         return
     end
 
-    local button = Instance.new("TextButton", tabContent)
+    local button = Instance.new("TextButton", content)
     button.Name = buttonText
     button.Text = buttonText
     button.Size = UDim2.new(1, -20, 0, 50)
+    button.Position = UDim2.new(0, 10, 0, #content:GetChildren() * 60)
     button.BackgroundColor3 = Color3.fromRGB(25, 25, 25)
     button.ZIndex = 2
     button.BorderSizePixel = 0
     button.TextColor3 = Color3.new(1, 1, 1)
     button.Font = Enum.Font.SourceSansBold
     button.TextScaled = true
-    self.buttons[buttonText] = button
 
     if callback then
         button.MouseButton1Click:Connect(callback)
     end
 
     self.buttons[buttonText] = button
-    self:autoSortButtons(content)
 end
 
 function GuiLibrary:autoSortButtons(tabContent)
